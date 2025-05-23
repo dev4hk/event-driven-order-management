@@ -42,7 +42,7 @@ public class CustomerCommandController {
     public ResponseEntity<CommonResponseDto<Void>> update(@Valid @RequestBody UpdateCustomerDto updateCustomerDto) {
 
         UpdateCustomerCommand command = UpdateCustomerCommand.builder()
-                .customerId(UUID.randomUUID())
+                .customerId(updateCustomerDto.getCustomerId())
                 .name(updateCustomerDto.getName())
                 .email(updateCustomerDto.getEmail())
                 .active(updateCustomerDto.isActive())

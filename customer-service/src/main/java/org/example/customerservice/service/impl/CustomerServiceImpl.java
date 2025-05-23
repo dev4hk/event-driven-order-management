@@ -29,9 +29,10 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public boolean updateCustomer(Customer customer) {
-        Customer existing = customerRepository.findByEmailAndActive(customer.getEmail(), true)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer with email " + customer.getEmail() + " not found"));
+        Customer existing = customerRepository.findByCustomerIdAndActive(customer.getCustomerId(), true)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + customer.getCustomerId() + " not found"));
         existing.setName(customer.getName());
+        existing.setEmail(customer.getEmail());
         existing.setCreditApproved(customer.isCreditApproved());
         customerRepository.save(existing);
         return true;
@@ -47,7 +48,7 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+        return customerRepository.findAllByActive(true);
     }
 
     @Override
