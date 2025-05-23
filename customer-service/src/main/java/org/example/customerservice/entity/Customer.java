@@ -1,5 +1,6 @@
 package org.example.customerservice.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class Customer {
 
     private String name;
 
+    @Column(unique = true)
     private String email;
 
     private boolean active;
