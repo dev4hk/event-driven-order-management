@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class CustomerDto {
+public class UpdateCustomerDto {
 
     private UUID customerId;
 

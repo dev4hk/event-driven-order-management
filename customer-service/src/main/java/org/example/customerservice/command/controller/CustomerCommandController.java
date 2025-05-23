@@ -8,7 +8,7 @@ import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeleteCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
 import org.example.customerservice.dto.CreateCustomerDto;
-import org.example.customerservice.dto.CustomerDto;
+import org.example.customerservice.dto.UpdateCustomerDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -39,14 +39,14 @@ public class CustomerCommandController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<CommonResponseDto<Void>> update(@Valid @RequestBody CustomerDto customerDto) {
+    public ResponseEntity<CommonResponseDto<Void>> update(@Valid @RequestBody UpdateCustomerDto updateCustomerDto) {
 
         UpdateCustomerCommand command = UpdateCustomerCommand.builder()
                 .customerId(UUID.randomUUID())
-                .name(customerDto.getName())
-                .email(customerDto.getEmail())
-                .active(customerDto.isActive())
-                .creditApproved(customerDto.isCreditApproved())
+                .name(updateCustomerDto.getName())
+                .email(updateCustomerDto.getEmail())
+                .active(updateCustomerDto.isActive())
+                .creditApproved(updateCustomerDto.isCreditApproved())
                 .build();
         commandGateway.sendAndWait(command);
 
