@@ -63,3 +63,4 @@ docker-compose/**/.data
 
 db-files
 axonserver
+postman.json

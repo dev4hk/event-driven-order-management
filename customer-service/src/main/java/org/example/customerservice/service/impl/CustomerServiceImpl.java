@@ -8,6 +8,7 @@ import org.example.customerservice.repository.CustomerRepository;
 import org.example.customerservice.service.ICustomerService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,5 +43,16 @@ public class CustomerServiceImpl implements ICustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + customerId + " not found"));
         existing.setActive(false);
         customerRepository.save(existing);
+    }
+
+    @Override
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
+    }
+
+    @Override
+    public Customer getCustomerById(UUID customerId) {
+        return customerRepository.findByCustomerIdAndActive(customerId, true)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + customerId + " not found"));
     }
 }

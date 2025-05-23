@@ -36,5 +36,14 @@ public class CommonResponseDto<T> {
                 .message(message)
                 .build();
     }
+
+    public static <T> CommonResponseDto<T> success(T data) {
+        return CommonResponseDto.<T>builder()
+                .success(true)
+                .message("Success")
+                .data(data)
+                .build();
+    }
+
 }
 
