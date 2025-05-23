@@ -9,6 +9,7 @@ import org.example.customerservice.service.ICustomerService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,5 +34,13 @@ public class CustomerServiceImpl implements ICustomerService {
         existing.setCreditApproved(customer.isCreditApproved());
         customerRepository.save(existing);
         return true;
+    }
+
+    @Override
+    public void deleteCustomer(UUID customerId) {
+        Customer existing = customerRepository.findByCustomerIdAndActive(customerId, true)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + customerId + " not found"));
+        existing.setActive(false);
+        customerRepository.save(existing);
     }
 }

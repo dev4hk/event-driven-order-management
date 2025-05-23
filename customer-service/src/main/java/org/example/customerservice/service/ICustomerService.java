@@ -7,4 +7,5 @@ import java.util.UUID;
 public interface ICustomerService {
     void createCustomer(Customer customer);
     boolean updateCustomer(Customer customer);
+    void deleteCustomer(UUID customerId);
 }

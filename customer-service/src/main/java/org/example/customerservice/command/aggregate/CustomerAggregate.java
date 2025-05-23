@@ -6,6 +6,7 @@ import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.events.CustomerCreatedEvent;
+import org.example.common.events.CustomerDeletedEvent;
 import org.example.common.events.CustomerUpdatedEvent;
 import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeleteCustomerCommand;
@@ -62,6 +63,13 @@ public class CustomerAggregate {
 
     @CommandHandler
     public void handle(DeleteCustomerCommand command) {
-        // todo: implement delete logic
+        CustomerDeletedEvent customerDeletedEvent = new CustomerDeletedEvent();
+        BeanUtils.copyProperties(command, customerDeletedEvent);
+        apply(customerDeletedEvent);
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerDeletedEvent event) {
+        this.active = false;
     }
 }
