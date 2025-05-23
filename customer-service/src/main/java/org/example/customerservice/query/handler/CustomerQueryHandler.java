@@ -27,7 +27,7 @@ public class CustomerQueryHandler {
 
     @QueryHandler
     public CustomerResponseDto getCustomerById(GetCustomerByIdQuery query) {
-        Customer customer = customerService.getCustomerById(query.customerId());
+        Customer customer = customerService.getCustomerById(query.getCustomerId());
         return new CustomerResponseDto(customer);
     }
 }

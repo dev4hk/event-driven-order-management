@@ -32,7 +32,7 @@ public class CustomerQueryController {
     }
 
     @GetMapping("/{customerId}")
-    public CompletableFuture<CommonResponseDto<CustomerResponseDto>> getById(@PathVariable UUID customerId) {
+    public CompletableFuture<CommonResponseDto<CustomerResponseDto>> getById(@PathVariable("customerId") UUID customerId) {
         return queryGateway.query(
                 new GetCustomerByIdQuery(customerId),
                 ResponseTypes.instanceOf(CustomerResponseDto.class)

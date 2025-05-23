@@ -1,4 +1,7 @@
 package org.example.customerservice.query;
 
-public record GetAllCustomersQuery() {
+import lombok.Value;
+
+@Value
+public class GetAllCustomersQuery {
 }

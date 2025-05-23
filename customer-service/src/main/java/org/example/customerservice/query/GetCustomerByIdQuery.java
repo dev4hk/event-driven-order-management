@@ -1,6 +1,10 @@
 package org.example.customerservice.query;
 
+import lombok.Value;
+
 import java.util.UUID;
 
-public record GetCustomerByIdQuery(UUID customerId) {
+@Value
+public class GetCustomerByIdQuery {
+    private final UUID customerId;
 }
