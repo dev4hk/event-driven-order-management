@@ -1,6 +1,7 @@
 package org.example.customerservice.query.projection;
 
 import lombok.RequiredArgsConstructor;
+import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.CustomerCreatedEvent;
 import org.example.common.events.CustomerDeletedEvent;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@ProcessingGroup("customer-group")
 public class CustomerProjection {
 
     private final ICustomerService iCustomerService;

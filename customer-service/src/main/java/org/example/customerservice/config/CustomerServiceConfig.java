@@ -1,6 +1,8 @@
 package org.example.customerservice.config;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.config.EventProcessingConfigurer;
+import org.axonframework.eventhandling.PropagatingErrorHandler;
 import org.example.customerservice.command.interceptor.CustomerCommandInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -14,4 +16,9 @@ public class CustomerServiceConfig {
         commandGateway.registerDispatchInterceptor(context.getBean(CustomerCommandInterceptor.class));
     }
 
+    @Autowired
+    public void configure(EventProcessingConfigurer config) {
+        config.registerListenerInvocationErrorHandler("customer-group",
+                conf -> PropagatingErrorHandler.instance());
+    }
 }
