@@ -1,15 +1,16 @@
-package org.example.customerservice.dto;
+package org.example.common.events;
 
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
-public class CustomerDto {
+public class CustomerCreatedEvent {
+
     private UUID customerId;
     private String name;
     private String email;
     private boolean active;
     private boolean creditApproved;
-}
 
+}
