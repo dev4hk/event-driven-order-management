@@ -12,4 +12,5 @@ public class ProductCreatedEvent {
     private String description;
     private BigDecimal price;
     private int stock;
+    private boolean active;
 }
