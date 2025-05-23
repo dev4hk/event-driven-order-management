@@ -8,9 +8,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class CreateCustomerCommand {
+public class DeleteCustomerCommand {
     @TargetAggregateIdentifier
     private final UUID customerId;
-    private final String name;
-    private final String email;
 }

@@ -8,6 +8,7 @@ import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.events.CustomerCreatedEvent;
 import org.example.common.events.CustomerUpdatedEvent;
 import org.example.customerservice.command.CreateCustomerCommand;
+import org.example.customerservice.command.DeleteCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
 import org.springframework.beans.BeanUtils;
 
@@ -30,6 +31,8 @@ public class CustomerAggregate {
     public CustomerAggregate(CreateCustomerCommand command) {
         CustomerCreatedEvent customerCreatedEvent = new CustomerCreatedEvent();
         BeanUtils.copyProperties(command, customerCreatedEvent);
+        customerCreatedEvent.setCreditApproved(false);
+        customerCreatedEvent.setActive(true);
         apply(customerCreatedEvent);
     }
 
@@ -55,5 +58,10 @@ public class CustomerAggregate {
         this.email = event.getEmail();
         this.active = event.isActive();
         this.creditApproved = event.isCreditApproved();
+    }
+
+    @CommandHandler
+    public void handle(DeleteCustomerCommand command) {
+        // todo: implement delete logic
     }
 }

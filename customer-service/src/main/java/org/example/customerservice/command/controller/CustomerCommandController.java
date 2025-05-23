@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.example.common.dto.CommonResponseDto;
 import org.example.customerservice.command.CreateCustomerCommand;
+import org.example.customerservice.command.DeleteCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
+import org.example.customerservice.dto.CreateCustomerDto;
 import org.example.customerservice.dto.CustomerDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +24,13 @@ public class CustomerCommandController {
 
     private final CommandGateway commandGateway;
 
-    @PostMapping
-    public ResponseEntity<CommonResponseDto<Void>> create(@Valid @RequestBody CustomerDto customerDto) {
+    @PostMapping("/create")
+    public ResponseEntity<CommonResponseDto<Void>> create(@Valid @RequestBody CreateCustomerDto createCustomerDto) {
 
         CreateCustomerCommand command = CreateCustomerCommand.builder()
                 .customerId(UUID.randomUUID())
-                .name(customerDto.getName())
-                .email(customerDto.getEmail())
-                .active(customerDto.isActive())
-                .creditApproved(customerDto.isCreditApproved())
+                .name(createCustomerDto.getName())
+                .email(createCustomerDto.getEmail())
                 .build();
         commandGateway.sendAndWait(command);
 
@@ -39,7 +39,7 @@ public class CustomerCommandController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<CommonResponseDto<CustomerDto>> update(@Valid @RequestBody CustomerDto customerDto) {
+    public ResponseEntity<CommonResponseDto<Void>> update(@Valid @RequestBody CustomerDto customerDto) {
 
         UpdateCustomerCommand command = UpdateCustomerCommand.builder()
                 .customerId(UUID.randomUUID())
@@ -53,4 +53,15 @@ public class CustomerCommandController {
         return ResponseEntity.ok(CommonResponseDto.success("Customer updated successfully"));
 
     }
+
+    @DeleteMapping("/delete/{customerId}")
+    public ResponseEntity<CommonResponseDto<Void>> delete(@PathVariable("customerId") UUID customerId) {
+        DeleteCustomerCommand command = DeleteCustomerCommand.builder()
+                .customerId(customerId)
+                .build();
+        commandGateway.sendAndWait(command);
+        return ResponseEntity.ok(CommonResponseDto.success("Customer deleted successfully"));
+    }
+
+
 }

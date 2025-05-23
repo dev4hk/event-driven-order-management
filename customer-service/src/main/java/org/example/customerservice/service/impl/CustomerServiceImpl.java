@@ -2,10 +2,13 @@ package org.example.customerservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.common.exception.ResourceAlreadyExistsException;
+import org.example.common.exception.ResourceNotFoundException;
 import org.example.customerservice.entity.Customer;
 import org.example.customerservice.repository.CustomerRepository;
 import org.example.customerservice.service.ICustomerService;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +18,8 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public void createCustomer(Customer customer) {
-        if (customerRepository.existsByEmail(customer.getEmail())) {
+        Optional<Customer> existing = customerRepository.findByEmailAndActive(customer.getEmail(), true);
+        if (existing.isPresent()) {
             throw new ResourceAlreadyExistsException("Customer with email " + customer.getEmail() + " already exists");
         }
         customerRepository.save(customer);
@@ -23,15 +27,11 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public boolean updateCustomer(Customer customer) {
-        return customerRepository.findById(customer.getCustomerId())
-                .map(existing -> {
-                    existing.setName(customer.getName());
-                    existing.setEmail(customer.getEmail());
-                    existing.setActive(customer.isActive());
-                    existing.setCreditApproved(customer.isCreditApproved());
-                    customerRepository.save(existing);
-                    return true;
-                })
-                .orElse(false);
+        Customer existing = customerRepository.findByEmailAndActive(customer.getEmail(), true)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer with email " + customer.getEmail() + " not found"));
+        existing.setName(customer.getName());
+        existing.setCreditApproved(customer.isCreditApproved());
+        customerRepository.save(existing);
+        return true;
     }
 }
