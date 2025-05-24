@@ -6,6 +6,7 @@ import org.example.productservice.repository.ProductRepository;
 import org.example.productservice.service.IProductService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,5 +38,16 @@ public class ProductServiceImpl implements IProductService {
                 .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
         existing.setActive(false);
         productRepository.save(existing);
+    }
+
+    @Override
+    public List<Product> getAllProducts() {
+        return productRepository.findByActive(true);
+    }
+
+    @Override
+    public Product getProductById(UUID productId) {
+        return productRepository.findByProductIdAndActive(productId, true)
+                .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
     }
 }
