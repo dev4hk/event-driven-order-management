@@ -48,7 +48,7 @@ public class ProductCommandController {
     }
 
     @DeleteMapping("/delete/{productId}")
-    public ResponseEntity<CommonResponseDto<Void>> delete(@PathVariable UUID productId) {
+    public ResponseEntity<CommonResponseDto<Void>> delete(@PathVariable("productId") UUID productId) {
         DeleteProductCommand command = DeleteProductCommand.builder()
                 .productId(productId)
                 .build();
