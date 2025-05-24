@@ -1,6 +1,7 @@
 package org.example.common.events;
 
 import lombok.Data;
+import org.example.common.constants.OrderStatus;
 import org.example.common.dto.OrderItemDto;
 
 import java.math.BigDecimal;
@@ -13,4 +14,5 @@ public class OrderCreatedEvent {
     private UUID customerId;
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
+    private OrderStatus status;
 }
