@@ -1,5 +1,6 @@
 package org.example.orderservice.service;
 
+import org.example.common.constants.OrderStatus;
 import org.example.orderservice.entity.Order;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface IOrderService {
     void deleteOrder(UUID orderId);
     List<Order> getAllOrders();
     Order getOrderById(UUID orderId);
+    void updateOrderStatus(UUID orderId, OrderStatus status);
 }

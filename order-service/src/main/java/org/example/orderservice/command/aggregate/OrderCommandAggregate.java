@@ -9,9 +9,12 @@ import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.constants.OrderStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.OrderCancelledEvent;
+import org.example.common.events.OrderCompletedEvent;
 import org.example.common.events.OrderCreatedEvent;
 import org.example.common.events.OrderUpdatedEvent;
+import org.example.orderservice.exception.OrderLifecycleViolationException;
 import org.example.orderservice.command.CancelOrderCommand;
+import org.example.orderservice.command.CompleteOrderCommand;
 import org.example.orderservice.command.CreateOrderCommand;
 import org.example.orderservice.command.UpdateOrderCommand;
 import org.springframework.beans.BeanUtils;
@@ -75,4 +78,20 @@ public class OrderCommandAggregate {
     public void on(OrderCancelledEvent event) {
         this.status = OrderStatus.CANCELLED;
     }
+
+    @CommandHandler
+    public void handle(CompleteOrderCommand command) {
+        if (this.status == OrderStatus.CANCELLED) {
+            throw new OrderLifecycleViolationException("Cannot complete a cancelled order.");
+        }
+        OrderCompletedEvent event = new OrderCompletedEvent();
+        event.setStatus(OrderStatus.COMPLETED);
+        AggregateLifecycle.apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(OrderCompletedEvent event) {
+        this.status = event.getStatus();
+    }
+
 }

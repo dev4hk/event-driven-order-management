@@ -1,6 +1,7 @@
 package org.example.orderservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.common.constants.OrderStatus;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.entity.OrderItem;
@@ -62,5 +63,13 @@ public class OrderServiceImpl implements IOrderService {
     public Order getOrderById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
+    }
+
+    @Override
+    public void updateOrderStatus(UUID orderId, OrderStatus status) {
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
+        existingOrder.setStatus(status);
+        orderRepository.save(existingOrder);
     }
 }

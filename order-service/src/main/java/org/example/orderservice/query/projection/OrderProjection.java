@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.OrderCancelledEvent;
+import org.example.common.events.OrderCompletedEvent;
 import org.example.common.events.OrderCreatedEvent;
 import org.example.common.events.OrderUpdatedEvent;
 import org.example.orderservice.entity.Order;
@@ -35,6 +36,11 @@ public class OrderProjection {
     @EventHandler
     public void on(OrderCancelledEvent event) {
         iOrderService.deleteOrder(event.getOrderId());
+    }
+
+    @EventHandler
+    public void on(OrderCompletedEvent event) {
+        iOrderService.updateOrderStatus(event.getOrderId(), event.getStatus());
     }
 
 }
