@@ -24,4 +24,16 @@ public class PaymentExceptionHandler extends GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InvalidPaymentDataException.class)
+    public ResponseEntity<ErrorResponseDto> handleAllExceptions(InvalidPaymentDataException ex, WebRequest request) {
+        ErrorResponseDto errorResponse = ErrorResponseDto.builder()
+                .path(request.getDescription(false))
+                .status(HttpStatus.BAD_REQUEST)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 }
