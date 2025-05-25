@@ -1,0 +1,25 @@
+package org.example.paymentservice.query.projection;
+
+import lombok.RequiredArgsConstructor;
+import org.axonframework.config.ProcessingGroup;
+import org.axonframework.eventhandling.EventHandler;
+import org.example.common.events.PaymentCreatedEvent;
+import org.example.paymentservice.entity.Payment;
+import org.example.paymentservice.service.IPaymentService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@ProcessingGroup("payment-group")
+public class PaymentProjection {
+
+    private final IPaymentService paymentService;
+
+    @EventHandler
+    public void on(PaymentCreatedEvent event) {
+        Payment payment = new Payment();
+        BeanUtils.copyProperties(event, payment);
+        paymentService.createPayment(payment);
+    }
+}

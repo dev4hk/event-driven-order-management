@@ -10,11 +10,11 @@ import org.example.customerservice.command.UpdateCustomerCommand;
 import org.example.customerservice.dto.CreateCustomerDto;
 import org.example.customerservice.dto.UpdateCustomerDto;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping(path = "/api/customers", produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -25,43 +25,39 @@ public class CustomerCommandController {
     private final CommandGateway commandGateway;
 
     @PostMapping("/create")
-    public ResponseEntity<CommonResponseDto<Void>> create(@Valid @RequestBody CreateCustomerDto createCustomerDto) {
-
+    public CompletableFuture<CommonResponseDto<Void>> create(@Valid @RequestBody CreateCustomerDto dto) {
         CreateCustomerCommand command = CreateCustomerCommand.builder()
                 .customerId(UUID.randomUUID())
-                .name(createCustomerDto.getName())
-                .email(createCustomerDto.getEmail())
+                .name(dto.getName())
+                .email(dto.getEmail())
                 .build();
-        commandGateway.sendAndWait(command);
 
-        return ResponseEntity.ok(CommonResponseDto.success("Customer created successfully"));
-
+        return commandGateway.send(command)
+                .thenApply(result -> CommonResponseDto.success("Customer created successfully"));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<CommonResponseDto<Void>> update(@Valid @RequestBody UpdateCustomerDto updateCustomerDto) {
-
+    public CompletableFuture<CommonResponseDto<Void>> update(@Valid @RequestBody UpdateCustomerDto dto) {
         UpdateCustomerCommand command = UpdateCustomerCommand.builder()
-                .customerId(updateCustomerDto.getCustomerId())
-                .name(updateCustomerDto.getName())
-                .email(updateCustomerDto.getEmail())
-                .active(updateCustomerDto.isActive())
-                .creditApproved(updateCustomerDto.isCreditApproved())
+                .customerId(dto.getCustomerId())
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .active(dto.isActive())
+                .creditApproved(dto.isCreditApproved())
                 .build();
-        commandGateway.sendAndWait(command);
 
-        return ResponseEntity.ok(CommonResponseDto.success("Customer updated successfully"));
-
+        return commandGateway.send(command)
+                .thenApply(result -> CommonResponseDto.success("Customer updated successfully"));
     }
 
     @DeleteMapping("/delete/{customerId}")
-    public ResponseEntity<CommonResponseDto<Void>> delete(@PathVariable("customerId") UUID customerId) {
+    public CompletableFuture<CommonResponseDto<Void>> delete(@PathVariable("customerId") UUID customerId) {
         DeleteCustomerCommand command = DeleteCustomerCommand.builder()
                 .customerId(customerId)
                 .build();
-        commandGateway.sendAndWait(command);
-        return ResponseEntity.ok(CommonResponseDto.success("Customer deleted successfully"));
+
+        return commandGateway.send(command)
+                .thenApply(result -> CommonResponseDto.success("Customer deleted successfully"));
     }
-
-
 }
+
