@@ -22,8 +22,8 @@ public class PaymentQueryController {
     private final QueryGateway queryGateway;
 
     @GetMapping("/{id}")
-    public CompletableFuture<CommonResponseDto<PaymentResponseDto>> getPaymentById(@PathVariable UUID id) {
-        return queryGateway.query(new GetPaymentByIdQuery(id),
+    public CompletableFuture<CommonResponseDto<PaymentResponseDto>> getPaymentById(@PathVariable("paymentId") UUID paymentId) {
+        return queryGateway.query(new GetPaymentByIdQuery(paymentId),
                         ResponseTypes.instanceOf(PaymentResponseDto.class))
                 .thenApply(CommonResponseDto::success);
     }
@@ -36,7 +36,7 @@ public class PaymentQueryController {
     }
 
     @GetMapping("/order/{orderId}")
-    public CompletableFuture<CommonResponseDto<List<PaymentResponseDto>>> getPaymentsByOrderId(@PathVariable UUID orderId) {
+    public CompletableFuture<CommonResponseDto<List<PaymentResponseDto>>> getPaymentsByOrderId(@PathVariable("orderId") UUID orderId) {
         return queryGateway.query(new GetPaymentsByOrderIdQuery(orderId),
                         ResponseTypes.multipleInstancesOf(PaymentResponseDto.class))
                 .thenApply(CommonResponseDto::success);
