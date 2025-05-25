@@ -7,9 +7,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class ShippingCreatedEvent {
+public class ShippingStatusUpdatedEvent {
     private UUID shippingId;
-    private UUID orderId;
-    private LocalDateTime shippedAt;
-    private ShippingStatus status;
+    private ShippingStatus newStatus;
+    private LocalDateTime updatedAt;
 }

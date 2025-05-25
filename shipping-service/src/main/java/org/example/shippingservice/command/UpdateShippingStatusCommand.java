@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
+import org.example.common.constants.ShippingStatus;
 
 import java.util.UUID;
 
@@ -12,7 +13,8 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MarkAsDeliveredCommand {
+public class UpdateShippingStatusCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
+    private ShippingStatus newStatus;
 }

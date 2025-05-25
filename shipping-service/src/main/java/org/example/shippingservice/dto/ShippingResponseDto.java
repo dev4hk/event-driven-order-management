@@ -19,5 +19,6 @@ public class ShippingResponseDto {
     private ShippingStatus status;
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
+    private LocalDateTime updatedAt;
 }
 

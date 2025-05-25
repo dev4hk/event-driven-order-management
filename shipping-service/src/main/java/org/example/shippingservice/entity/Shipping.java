@@ -28,6 +28,8 @@ public class Shipping {
 
     private LocalDateTime shippedAt;
 
+    private LocalDateTime updatedAt;
+
     private LocalDateTime deliveredAt;
 }
 
