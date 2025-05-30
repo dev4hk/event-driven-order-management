@@ -2,6 +2,7 @@ package org.example.productservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.productservice.entity.Product;
+import org.example.productservice.exception.InvalidProductDataException;
 import org.example.productservice.repository.ProductRepository;
 import org.example.productservice.service.IProductService;
 import org.springframework.stereotype.Service;
@@ -49,5 +50,22 @@ public class ProductServiceImpl implements IProductService {
     public Product getProductById(UUID productId) {
         return productRepository.findByProductIdAndActive(productId, true)
                 .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
+    }
+
+    @Override
+    public void reserveProduct(UUID productId, int quantity) {
+        Product product = getProductById(productId);
+        if (product.getStock() < quantity) {
+            throw new InvalidProductDataException("Not enough stock for product " + productId);
+        }
+        product.setStock(product.getStock() - quantity);
+        productRepository.save(product);
+    }
+
+    @Override
+    public void releaseProductReservation(UUID productId, int quantity) {
+        Product product = getProductById(productId);
+        product.setStock(product.getStock() + quantity);
+        productRepository.save(product);
     }
 }

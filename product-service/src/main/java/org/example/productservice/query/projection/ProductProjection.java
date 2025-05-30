@@ -3,9 +3,7 @@ package org.example.productservice.query.projection;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
-import org.example.common.events.ProductCreatedEvent;
-import org.example.common.events.ProductDeletedEvent;
-import org.example.common.events.ProductUpdatedEvent;
+import org.example.common.events.*;
 import org.example.productservice.entity.Product;
 import org.example.productservice.service.IProductService;
 import org.springframework.beans.BeanUtils;
@@ -35,6 +33,16 @@ public class ProductProjection {
     @EventHandler
     public void on(ProductDeletedEvent event) {
         iProductService.deleteProduct(event.getProductId());
+    }
+
+    @EventHandler
+    public void on(ProductReservedEvent event) {
+        iProductService.reserveProduct(event.getProductId(), event.getQuantity());
+    }
+
+    @EventHandler
+    public void on(ProductReservationReleasedEvent event) {
+        iProductService.releaseProductReservation(event.getProductId(), event.getQuantity());
     }
 }
 

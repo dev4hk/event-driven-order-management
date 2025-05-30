@@ -5,9 +5,9 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.example.common.events.ProductCreatedEvent;
-import org.example.common.events.ProductUpdatedEvent;
-import org.example.common.events.ProductDeletedEvent;
+import org.example.common.commands.ReleaseProductReservationCommand;
+import org.example.common.commands.ReserveProductCommand;
+import org.example.common.events.*;
 import org.example.productservice.command.CreateProductCommand;
 import org.example.productservice.command.UpdateProductCommand;
 import org.example.productservice.command.DeleteProductCommand;
@@ -73,5 +73,57 @@ public class ProductAggregate {
     @EventSourcingHandler
     public void on(ProductDeletedEvent event) {
         this.active = false;
+    }
+
+    @CommandHandler
+    public void handle(ReserveProductCommand command) {
+        if (!this.active) {
+            ProductReservationFailedEvent event = ProductReservationFailedEvent.builder()
+                    .orderId(command.getOrderId())
+                    .productId(command.getProductId())
+                    .customerId(command.getCustomerId())
+                    .reason("Product is not active")
+                    .build();
+            apply(event);
+        }
+        else if (this.stock < command.getQuantity()) {
+            ProductReservationFailedEvent event = ProductReservationFailedEvent.builder()
+                    .orderId(command.getOrderId())
+                    .productId(command.getProductId())
+                    .customerId(command.getCustomerId())
+                    .reason("Not enough stock for the order " + command.getOrderId())
+                    .build();
+            apply(event);
+        }
+        else {
+            ProductReservedEvent event = ProductReservedEvent.builder()
+                    .orderId(command.getOrderId())
+                    .productId(command.getProductId())
+                    .customerId(command.getCustomerId())
+                    .quantity(command.getQuantity())
+                    .build();
+            apply(event);
+        }
+    }
+
+    @EventSourcingHandler
+    public void on(ProductReservedEvent event) {
+        this.stock -= event.getQuantity();
+    }
+
+    @CommandHandler
+    public void handle(ReleaseProductReservationCommand command) {
+        ProductReservationReleasedEvent event = ProductReservationReleasedEvent.builder()
+                .orderId(command.getOrderId())
+                .productId(command.getProductId())
+                .customerId(command.getCustomerId())
+                .quantity(command.getQuantity())
+                .build();
+        apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(ProductReservationReleasedEvent event) {
+        this.stock += event.getQuantity();
     }
 }
