@@ -1,4 +1,4 @@
-package org.example.orderservice.command;
+package org.example.common.commands;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,9 +8,9 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class CancelOrderCommand {
+public class ValidateCustomerCommand {
+
     @TargetAggregateIdentifier
-    private final UUID orderId;
-    private final UUID customerId;
-    private String reason;
+    private UUID customerId;
+
 }

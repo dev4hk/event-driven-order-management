@@ -5,9 +5,8 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.example.common.events.CustomerCreatedEvent;
-import org.example.common.events.CustomerDeletedEvent;
-import org.example.common.events.CustomerUpdatedEvent;
+import org.example.common.commands.ValidateCustomerCommand;
+import org.example.common.events.*;
 import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeleteCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
@@ -72,4 +71,35 @@ public class CustomerAggregate {
     public void on(CustomerDeletedEvent event) {
         this.active = false;
     }
+
+    @CommandHandler
+    public void handle(ValidateCustomerCommand command) {
+        if(!this.active) {
+            CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
+                    .customerId(command.getCustomerId())
+                    .reason("Customer is not active")
+                    .build();
+            apply(customerValidationFailedEvent);
+        } else if(!this.creditApproved) {
+            CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
+                    .customerId(command.getCustomerId())
+                    .reason("Customer credit is not approved")
+                    .build();
+            apply(customerValidationFailedEvent);
+        } else {
+            CustomerValidatedEvent customerValidatedEvent = CustomerValidatedEvent.builder()
+                    .customerId(command.getCustomerId())
+                    .build();
+            apply(customerValidatedEvent);
+        }
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerValidatedEvent event) {
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerValidationFailedEvent event) {
+    }
+
 }
