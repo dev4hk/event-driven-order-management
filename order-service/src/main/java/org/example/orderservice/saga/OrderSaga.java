@@ -48,7 +48,21 @@ public class OrderSaga {
                 .customerId(customerId)
                 .build();
 
-        commandGateway.send(command);
+        commandGateway.send(command, new CommandCallback<ValidateCustomerCommand, Object>() {
+            @Override
+            public void onResult(@Nonnull CommandMessage<? extends ValidateCustomerCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
+                if (commandResultMessage.isExceptional()) {
+                    Throwable exception = commandResultMessage.exceptionResult();
+                    log.error("[Saga] Failed to dispatch ValidateCustomerCommand for customer {}: {}", customerId, exception.getMessage());
+                    CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
+                            .orderId(orderId)
+                            .customerId(customerId)
+                            .reason("Customer validation dispatch failed: " + exception.getMessage())
+                            .build();
+                    commandGateway.send(cancelOrderCommand);
+                }
+            }
+        });
 
     }
 
