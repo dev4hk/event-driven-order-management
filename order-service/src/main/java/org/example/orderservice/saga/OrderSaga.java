@@ -5,6 +5,7 @@ import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
@@ -30,6 +31,7 @@ public class OrderSaga {
     private UUID customerId;
     private UUID paymentId;
     private UUID shippingId;
+    private boolean isOrderCancelled = false;
 
     private List<OrderItemDto> items;
     private Map<UUID, Integer> reservedProducts = new HashMap<>();
@@ -45,6 +47,11 @@ public class OrderSaga {
         this.customerId = event.getCustomerId();
         this.items = event.getItems();
 
+        if (items.isEmpty()) {
+            cancelOrder("No products in order");
+            return;
+        }
+
         ValidateCustomerCommand command = ValidateCustomerCommand.builder()
                 .customerId(customerId)
                 .build();
@@ -55,12 +62,8 @@ public class OrderSaga {
                 if (commandResultMessage.isExceptional()) {
                     Throwable exception = commandResultMessage.exceptionResult();
                     log.error("[Saga] Failed to dispatch ValidateCustomerCommand for customer {}: {}", customerId, exception.getMessage());
-                    CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
-                            .orderId(orderId)
-                            .customerId(customerId)
-                            .reason("Customer validation dispatch failed: " + exception.getMessage())
-                            .build();
-                    commandGateway.send(cancelOrderCommand);
+                    cancelOrder("Customer validation dispatch failed: " + exception.getMessage());
+
                 }
             }
         });
@@ -70,12 +73,7 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(CustomerValidationFailedEvent event) {
         log.warn("[Saga] Customer {} validation failed: {}", event.getCustomerId(), event.getReason());
-        CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
-                .orderId(orderId)
-                .customerId(customerId)
-                .reason("Customer validation failed: " + event.getReason())
-                .build();
-        commandGateway.send(cancelOrderCommand);
+        cancelOrder("Customer validation failed: " + event.getReason());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -139,13 +137,27 @@ public class OrderSaga {
         this.releasedProducts.add(command.getProductId());
         if(this.releasedProducts.containsAll(this.reservedProducts.keySet())) {
             log.info("[Saga] All product reservations released. Sending CancelOrderCommand.");
+            cancelOrder("One or more product reservations failed");
+        }
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    @EndSaga
+    public void on(OrderCancelledEvent event) {
+        log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
+    }
+
+    private void cancelOrder(String reason) {
+        if (!isOrderCancelled) {
+            isOrderCancelled = true;
             CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
                     .orderId(orderId)
                     .customerId(customerId)
-                    .reason("One or more product reservations failed")
+                    .reason(reason)
                     .build();
             commandGateway.send(cancelOrderCommand);
         }
     }
+
 
 }
