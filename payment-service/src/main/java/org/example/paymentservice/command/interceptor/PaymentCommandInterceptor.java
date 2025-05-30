@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.exception.ResourceAlreadyExistsException;
-import org.example.paymentservice.command.CreatePaymentCommand;
+import org.example.common.commands.CreatePaymentCommand;
 import org.example.paymentservice.repository.PaymentRepository;
 import org.springframework.stereotype.Component;
 

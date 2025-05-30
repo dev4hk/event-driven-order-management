@@ -9,6 +9,7 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
+import org.example.common.commands.CreatePaymentCommand;
 import org.example.common.commands.ReleaseProductReservationCommand;
 import org.example.common.commands.ReserveProductCommand;
 import org.example.common.commands.ValidateCustomerCommand;
@@ -18,6 +19,7 @@ import org.example.orderservice.command.CancelOrderCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Saga
@@ -114,27 +116,33 @@ public class OrderSaga {
 
         if (!this.failedProducts.isEmpty()) {
             log.warn("[Saga] One or more products failed to reserve. Triggering compensation...");
-            for (UUID productId : this.reservedProducts.keySet()) {
-                ReleaseProductReservationCommand releaseProductReservationCommand = ReleaseProductReservationCommand.builder()
-                        .orderId(orderId)
-                        .productId(productId)
-                        .customerId(customerId)
-                        .quantity(this.reservedProducts.get(productId))
-                        .build();
-                commandGateway.send(releaseProductReservationCommand);
-            }
+            releaseAllReservedProducts();
+            cancelOrder("One or more products failed to reserve");
         }
         else {
             log.info("[Saga] All products reserved. Triggering payment...");
             this.paymentId = UUID.randomUUID();
-            // TODO: trigger payment
+
+            CreatePaymentCommand createPaymentCommand = CreatePaymentCommand.builder()
+                    .paymentId(this.paymentId)
+                    .orderId(this.orderId)
+                    .customerId(this.customerId)
+                    .amount(calculateTotalAmount())
+                    .build();
+            commandGateway.send(createPaymentCommand);
         }
     }
 
+    private BigDecimal calculateTotalAmount() {
+        return this.items.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     @SagaEventHandler(associationProperty = "orderId")
-    public void on(ProductReservationReleasedEvent command) {
-        log.info("[Saga] Received ProductReservationReleasedEvent for productId {}", command.getProductId());
-        this.releasedProducts.add(command.getProductId());
+    public void on(ProductReservationReleasedEvent event) {
+        log.info("[Saga] Received ProductReservationReleasedEvent for productId {}", event.getProductId());
+        this.releasedProducts.add(event.getProductId());
         if(this.releasedProducts.containsAll(this.reservedProducts.keySet())) {
             log.info("[Saga] All product reservations released. Sending CancelOrderCommand.");
             cancelOrder("One or more product reservations failed");
@@ -159,5 +167,30 @@ public class OrderSaga {
         }
     }
 
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(PaymentProcessedEvent event) {
+        log.info("[Saga] Received PaymentProcessedEvent for paymentId {}", event.getPaymentId());
+        // Todo: Create Shipping
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(PaymentFailedEvent event) {
+        log.info("[Saga] Received PaymentFailedEvent for paymentId {}", event.getPaymentId());
+        releaseAllReservedProducts();
+        cancelOrder("Payment failed");
+    }
+
+    private void releaseAllReservedProducts() {
+        reservedProducts.forEach((productId, quantity) -> {
+            log.info("[Saga] Releasing product reservation for productId {}", productId);
+            ReleaseProductReservationCommand releaseProductReservationCommand = ReleaseProductReservationCommand.builder()
+                    .orderId(orderId)
+                    .productId(productId)
+                    .customerId(customerId)
+                    .quantity(quantity)
+                    .build();
+            commandGateway.send(releaseProductReservationCommand);
+        });
+    }
 
 }

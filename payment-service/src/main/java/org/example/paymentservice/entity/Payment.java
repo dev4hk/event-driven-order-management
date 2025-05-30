@@ -26,10 +26,14 @@ public class Payment {
 
     private UUID orderId;
 
+    private UUID customerId;
+
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
+
+    private String reason;
 
     private LocalDateTime createdAt;
 }

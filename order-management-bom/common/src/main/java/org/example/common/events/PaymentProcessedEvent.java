@@ -1,18 +1,19 @@
-package org.example.paymentservice.command;
+package org.example.common.events;
 
 import lombok.Builder;
 import lombok.Data;
-import org.axonframework.modelling.command.TargetAggregateIdentifier;
+import org.example.common.constants.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
 @Builder
-public class CreatePaymentCommand {
-    @TargetAggregateIdentifier
+public class PaymentProcessedEvent {
     private UUID paymentId;
     private UUID orderId;
+    private UUID customerId;
     private BigDecimal amount;
+    private PaymentStatus status;
 }
 

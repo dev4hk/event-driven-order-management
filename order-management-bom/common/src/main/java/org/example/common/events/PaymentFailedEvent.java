@@ -9,10 +9,13 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class PaymentCreatedEvent {
+public class PaymentFailedEvent {
+
     private UUID paymentId;
     private UUID orderId;
+    private UUID customerId;
     private BigDecimal amount;
     private PaymentStatus status;
-}
+    private String reason;
 
+}
