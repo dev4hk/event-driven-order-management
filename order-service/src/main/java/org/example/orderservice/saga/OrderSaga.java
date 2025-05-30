@@ -69,7 +69,7 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "customerId")
     public void on(CustomerValidatedEvent event) {
         log.info("[Saga] Customer {} validated", event.getCustomerId());
-        // Todo: reserve products
+
     }
 
     @SagaEventHandler(associationProperty = "customerId")

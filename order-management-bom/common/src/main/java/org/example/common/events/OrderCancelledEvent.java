@@ -9,4 +9,5 @@ import java.util.UUID;
 public class OrderCancelledEvent {
     private UUID orderId;
     private OrderStatus status;
+    private String reason;
 }

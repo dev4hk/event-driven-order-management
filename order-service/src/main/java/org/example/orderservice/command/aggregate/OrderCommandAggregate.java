@@ -33,6 +33,7 @@ public class OrderCommandAggregate {
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
     private OrderStatus status;
+    private String reason;
 
     @CommandHandler
     public OrderCommandAggregate(CreateOrderCommand command) {
@@ -71,12 +72,14 @@ public class OrderCommandAggregate {
     public void handle(CancelOrderCommand command) {
         OrderCancelledEvent event = new OrderCancelledEvent();
         event.setStatus(OrderStatus.CANCELLED);
+        event.setReason(command.getReason());
         AggregateLifecycle.apply(event);
     }
 
     @EventSourcingHandler
     public void on(OrderCancelledEvent event) {
         this.status = OrderStatus.CANCELLED;
+        this.reason = event.getReason();
     }
 
     @CommandHandler

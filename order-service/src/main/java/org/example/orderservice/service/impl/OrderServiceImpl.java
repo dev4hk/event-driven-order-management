@@ -72,4 +72,12 @@ public class OrderServiceImpl implements IOrderService {
         existingOrder.setStatus(status);
         orderRepository.save(existingOrder);
     }
+
+    @Override
+    public void cancelOrder(UUID orderId, OrderStatus status, String reason) {
+        Order existingOrder = getOrderById(orderId);
+        existingOrder.setStatus(status);
+        existingOrder.setReason(reason);
+        orderRepository.save(existingOrder);
+    }
 }

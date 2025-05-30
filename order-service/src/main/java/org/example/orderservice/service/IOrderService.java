@@ -13,4 +13,5 @@ public interface IOrderService {
     List<Order> getAllOrders();
     Order getOrderById(UUID orderId);
     void updateOrderStatus(UUID orderId, OrderStatus status);
+    void cancelOrder(UUID orderId, OrderStatus status, String reason);
 }

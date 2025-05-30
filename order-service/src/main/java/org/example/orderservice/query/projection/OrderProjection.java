@@ -35,7 +35,7 @@ public class OrderProjection {
 
     @EventHandler
     public void on(OrderCancelledEvent event) {
-        iOrderService.deleteOrder(event.getOrderId());
+        iOrderService.cancelOrder(event.getOrderId(), event.getStatus(), event.getReason());
     }
 
     @EventHandler
