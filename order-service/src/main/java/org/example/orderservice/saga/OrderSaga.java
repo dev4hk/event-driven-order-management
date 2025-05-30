@@ -189,7 +189,20 @@ public class OrderSaga {
                     .customerId(customerId)
                     .quantity(quantity)
                     .build();
-            commandGateway.send(releaseProductReservationCommand);
+            commandGateway.send(releaseProductReservationCommand, new CommandCallback<ReleaseProductReservationCommand, Object>() {
+                @Override
+                public void onResult(CommandMessage<? extends ReleaseProductReservationCommand> commandMessage,
+                                     CommandResultMessage<? extends Object> commandResultMessage) {
+                    if (commandResultMessage.isExceptional()) {
+                        log.error("[Saga] Failed to release reservation for productId {}: {}",
+                                commandMessage.getPayload().getProductId(),
+                                commandResultMessage.exceptionResult().getMessage());
+                    } else {
+                        log.info("[Saga] Successfully released reservation for productId {}",
+                                commandMessage.getPayload().getProductId());
+                    }
+                }
+            });
         });
     }
 
