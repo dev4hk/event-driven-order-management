@@ -77,18 +77,21 @@ public class CustomerAggregate {
         if(!this.active) {
             CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
                     .customerId(command.getCustomerId())
+                    .orderId(command.getOrderId())
                     .reason("Customer is not active")
                     .build();
             apply(customerValidationFailedEvent);
         } else if(!this.creditApproved) {
             CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
                     .customerId(command.getCustomerId())
+                    .orderId(command.getOrderId())
                     .reason("Customer credit is not approved")
                     .build();
             apply(customerValidationFailedEvent);
         } else {
             CustomerValidatedEvent customerValidatedEvent = CustomerValidatedEvent.builder()
                     .customerId(command.getCustomerId())
+                    .orderId(command.getOrderId())
                     .build();
             apply(customerValidatedEvent);
         }
