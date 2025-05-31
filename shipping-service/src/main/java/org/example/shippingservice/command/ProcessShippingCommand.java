@@ -13,7 +13,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateShippingStatusCommand {
+public class ProcessShippingCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
     private ShippingStatus newStatus;

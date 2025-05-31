@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class ShippingStatusUpdatedEvent {
+public class ShippingProcessedEvent {
     private UUID shippingId;
     private ShippingStatus newStatus;
     private LocalDateTime updatedAt;

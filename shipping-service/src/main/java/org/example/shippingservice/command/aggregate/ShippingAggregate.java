@@ -7,9 +7,9 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.events.ShippingCreatedEvent;
-import org.example.common.events.ShippingStatusUpdatedEvent;
+import org.example.common.events.ShippingProcessedEvent;
 import org.example.common.commands.CreateShippingCommand;
-import org.example.shippingservice.command.UpdateShippingStatusCommand;
+import org.example.shippingservice.command.ProcessShippingCommand;
 import org.example.shippingservice.exception.InvalidShippingStateException;
 import org.springframework.beans.BeanUtils;
 
@@ -49,18 +49,19 @@ public class ShippingAggregate {
     }
 
     @CommandHandler
-    public void handle(UpdateShippingStatusCommand command) {
+    public void handle(ProcessShippingCommand command) {
         if (this.status == ShippingStatus.DELIVERED) {
             throw new InvalidShippingStateException("Cannot update shipping status after it has been delivered.");
         }
-        ShippingStatusUpdatedEvent event = new ShippingStatusUpdatedEvent();
+        ShippingProcessedEvent event = new ShippingProcessedEvent();
         BeanUtils.copyProperties(command, event);
         event.setUpdatedAt(LocalDateTime.now());
         apply(event);
     }
 
     @EventSourcingHandler
-    public void on(ShippingStatusUpdatedEvent event) {
+    public void on(ShippingProcessedEvent event) {
         this.status = event.getNewStatus();
     }
+
 }

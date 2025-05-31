@@ -7,7 +7,7 @@ import org.example.common.constants.ShippingStatus;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.common.commands.CreateShippingCommand;
-import org.example.shippingservice.command.UpdateShippingStatusCommand;
+import org.example.shippingservice.command.ProcessShippingCommand;
 import org.example.shippingservice.exception.InvalidShippingStateException;
 import org.example.shippingservice.repository.ShippingRepository;
 import org.springframework.stereotype.Component;
@@ -37,8 +37,8 @@ public class ShippingCommandInterceptor implements MessageDispatchInterceptor<Co
                 }
             }
 
-            if (UpdateShippingStatusCommand.class.equals(command.getPayloadType())) {
-                UpdateShippingStatusCommand updateCmd = (UpdateShippingStatusCommand) command.getPayload();
+            if (ProcessShippingCommand.class.equals(command.getPayloadType())) {
+                ProcessShippingCommand updateCmd = (ProcessShippingCommand) command.getPayload();
 
                 var shipping = shippingRepository.findById(updateCmd.getShippingId());
                 if (shipping.isEmpty()) {
