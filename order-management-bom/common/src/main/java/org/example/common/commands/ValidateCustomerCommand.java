@@ -12,5 +12,6 @@ public class ValidateCustomerCommand {
 
     @TargetAggregateIdentifier
     private UUID customerId;
+    private UUID orderId;
 
 }

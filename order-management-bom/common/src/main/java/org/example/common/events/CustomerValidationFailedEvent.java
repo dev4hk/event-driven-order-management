@@ -10,6 +10,7 @@ import java.util.UUID;
 public class CustomerValidationFailedEvent {
 
     private UUID customerId;
+    private UUID orderId;
     private String reason;
 
 }

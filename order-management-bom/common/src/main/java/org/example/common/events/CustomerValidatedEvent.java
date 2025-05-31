@@ -10,5 +10,6 @@ import java.util.UUID;
 public class CustomerValidatedEvent {
 
     private UUID customerId;
+    private UUID orderId;
 
 }

@@ -53,6 +53,7 @@ public class OrderSaga {
 
         ValidateCustomerCommand command = ValidateCustomerCommand.builder()
                 .customerId(customerId)
+                .orderId(orderId)
                 .build();
 
         commandGateway.send(command, new CommandCallback<ValidateCustomerCommand, Object>() {
