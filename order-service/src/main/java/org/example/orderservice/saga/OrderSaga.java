@@ -178,6 +178,12 @@ public class OrderSaga {
         commandGateway.send(createShippingCommand);
     }
 
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(ShippingCreatedEvent event) {
+        log.info("[Saga] Received ShippingCreatedEvent for shippingId {}", event.getShippingId());
+    }
+
     @SagaEventHandler(associationProperty = "orderId")
     public void on(PaymentFailedEvent event) {
         log.info("[Saga] Received PaymentFailedEvent for paymentId {}", event.getPaymentId());
