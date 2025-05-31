@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class CustomerServiceConfig {
+public class ProductServiceConfig {
 
     @Autowired
     public void registerProductCommandInterceptor(ApplicationContext context, CommandGateway commandGateway) {
