@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.CommonResponseDto;
+import org.example.shippingservice.command.DeliverShippingCommand;
 import org.example.shippingservice.command.ProcessShippingCommand;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,16 @@ public class ShippingCommandController {
                 .build();
         return commandGateway.send(command)
                 .thenApply(result -> CommonResponseDto.success("Shipping processed", shippingId.toString()));
+    }
+
+    @PutMapping("/deliver/{shippingId}")
+    public CompletableFuture<CommonResponseDto<String>> deliver(@PathVariable("shippingId") UUID shippingId) {
+        DeliverShippingCommand command = DeliverShippingCommand.builder()
+                .shippingId(shippingId)
+                .newStatus(ShippingStatus.DELIVERED)
+                .build();
+        return commandGateway.send(command)
+                .thenApply(result -> CommonResponseDto.success("Shipping delivered", shippingId.toString()));
     }
 
 }

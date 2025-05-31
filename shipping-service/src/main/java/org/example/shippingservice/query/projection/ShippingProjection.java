@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.ShippingCreatedEvent;
+import org.example.common.events.ShippingDeliveredEvent;
 import org.example.common.events.ShippingProcessedEvent;
 import org.example.shippingservice.entity.Shipping;
 import org.example.shippingservice.service.IShippingService;
@@ -31,4 +32,12 @@ public class ShippingProjection {
     public void on(ShippingProcessedEvent event) {
         shippingService.updateShippingStatus(event.getShippingId(), event.getNewStatus(), event.getUpdatedAt());
     }
+
+    @EventHandler
+    public void on(ShippingDeliveredEvent event) {
+        shippingService.updateShippingStatus(event.getShippingId(), event.getNewStatus(), event.getUpdatedAt());
+    }
+
+
+
 }
