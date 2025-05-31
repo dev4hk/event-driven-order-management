@@ -9,10 +9,7 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
-import org.example.common.commands.CreatePaymentCommand;
-import org.example.common.commands.ReleaseProductReservationCommand;
-import org.example.common.commands.ReserveProductCommand;
-import org.example.common.commands.ValidateCustomerCommand;
+import org.example.common.commands.*;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
@@ -170,7 +167,15 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(PaymentProcessedEvent event) {
         log.info("[Saga] Received PaymentProcessedEvent for paymentId {}", event.getPaymentId());
-        // Todo: Create Shipping
+
+        this.shippingId = UUID.randomUUID();
+        CreateShippingCommand createShippingCommand = CreateShippingCommand.builder()
+                .shippingId(this.shippingId)
+                .orderId(orderId)
+                .customerId(customerId)
+                .paymentId(paymentId)
+                .build();
+        commandGateway.send(createShippingCommand);
     }
 
     @SagaEventHandler(associationProperty = "orderId")

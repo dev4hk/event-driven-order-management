@@ -8,7 +8,7 @@ import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.events.ShippingCreatedEvent;
 import org.example.common.events.ShippingStatusUpdatedEvent;
-import org.example.shippingservice.command.CreateShippingCommand;
+import org.example.common.commands.CreateShippingCommand;
 import org.example.shippingservice.command.UpdateShippingStatusCommand;
 import org.example.shippingservice.exception.InvalidShippingStateException;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +25,8 @@ public class ShippingAggregate {
     @AggregateIdentifier
     private UUID shippingId;
     private UUID orderId;
+    private UUID customerId;
+    private UUID paymentId;
     private ShippingStatus status;
 
     @CommandHandler
@@ -41,6 +43,8 @@ public class ShippingAggregate {
     public void on(ShippingCreatedEvent event) {
         this.shippingId = event.getShippingId();
         this.orderId = event.getOrderId();
+        this.customerId = event.getCustomerId();
+        this.paymentId = event.getPaymentId();
         this.status = event.getStatus();
     }
 

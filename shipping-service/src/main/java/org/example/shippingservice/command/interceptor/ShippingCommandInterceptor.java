@@ -6,14 +6,13 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
-import org.example.shippingservice.command.CreateShippingCommand;
+import org.example.common.commands.CreateShippingCommand;
 import org.example.shippingservice.command.UpdateShippingStatusCommand;
 import org.example.shippingservice.exception.InvalidShippingStateException;
 import org.example.shippingservice.repository.ShippingRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.function.BiFunction;
 
 @Component

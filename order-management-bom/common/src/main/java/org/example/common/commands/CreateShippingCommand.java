@@ -1,4 +1,4 @@
-package org.example.shippingservice.command;
+package org.example.common.commands;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,4 +16,6 @@ public class CreateShippingCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
     private UUID orderId;
+    private UUID customerId;
+    private UUID paymentId;
 }

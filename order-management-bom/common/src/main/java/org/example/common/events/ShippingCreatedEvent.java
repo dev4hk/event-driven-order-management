@@ -10,6 +10,8 @@ import java.util.UUID;
 public class ShippingCreatedEvent {
     private UUID shippingId;
     private UUID orderId;
+    private UUID customerId;
+    private UUID paymentId;
     private LocalDateTime shippedAt;
     private ShippingStatus status;
 }
