@@ -20,6 +20,7 @@ import org.example.orderservice.command.UpdateOrderCommand;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,12 +35,14 @@ public class OrderCommandAggregate {
     private BigDecimal totalAmount;
     private OrderStatus status;
     private String reason;
+    private LocalDateTime createdAt;
 
     @CommandHandler
     public OrderCommandAggregate(CreateOrderCommand command) {
         OrderCreatedEvent event = new OrderCreatedEvent();
         BeanUtils.copyProperties(command, event);
         event.setStatus(OrderStatus.CREATED);
+        event.setCreatedAt(LocalDateTime.now());
         AggregateLifecycle.apply(event);
     }
 
@@ -50,6 +53,7 @@ public class OrderCommandAggregate {
         this.items = event.getItems();
         this.totalAmount = event.getTotalAmount();
         this.status = event.getStatus();
+        this.createdAt = event.getCreatedAt();
     }
 
     @CommandHandler

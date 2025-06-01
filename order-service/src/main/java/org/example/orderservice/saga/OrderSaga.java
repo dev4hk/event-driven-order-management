@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Saga
@@ -31,6 +32,7 @@ public class OrderSaga {
     private UUID paymentId;
     private UUID shippingId;
     private boolean isOrderCancelled = false;
+    private LocalDateTime createdAt;
 
     private List<OrderItemDto> items;
     private Map<UUID, Integer> reservedProducts = new HashMap<>();
@@ -45,6 +47,7 @@ public class OrderSaga {
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
         this.items = event.getItems();
+        this.createdAt = event.getCreatedAt();
 
         if (items.isEmpty()) {
             cancelOrder("No products in order");
@@ -116,8 +119,7 @@ public class OrderSaga {
             log.warn("[Saga] One or more products failed to reserve. Triggering compensation...");
             releaseAllReservedProducts();
             cancelOrder("One or more products failed to reserve");
-        }
-        else {
+        } else {
             log.info("[Saga] All products reserved. Triggering payment...");
             this.paymentId = UUID.randomUUID();
 
@@ -141,7 +143,7 @@ public class OrderSaga {
     public void on(ProductReservationReleasedEvent event) {
         log.info("[Saga] Received ProductReservationReleasedEvent for productId {}", event.getProductId());
         this.releasedProducts.add(event.getProductId());
-        if(this.releasedProducts.containsAll(this.reservedProducts.keySet())) {
+        if (this.releasedProducts.containsAll(this.reservedProducts.keySet())) {
             log.info("[Saga] All product reservations released. Sending CancelOrderCommand.");
             cancelOrder("One or more product reservations failed");
         }
