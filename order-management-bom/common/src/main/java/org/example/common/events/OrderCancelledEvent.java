@@ -8,6 +8,7 @@ import java.util.UUID;
 @Data
 public class OrderCancelledEvent {
     private UUID orderId;
+    private UUID customerId;
     private OrderStatus status;
     private String reason;
 }

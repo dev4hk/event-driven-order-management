@@ -71,8 +71,8 @@ public class OrderCommandAggregate {
     @CommandHandler
     public void handle(CancelOrderCommand command) {
         OrderCancelledEvent event = new OrderCancelledEvent();
+        BeanUtils.copyProperties(command, event);
         event.setStatus(OrderStatus.CANCELLED);
-        event.setReason(command.getReason());
         AggregateLifecycle.apply(event);
     }
 
