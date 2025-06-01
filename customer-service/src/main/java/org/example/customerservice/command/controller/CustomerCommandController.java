@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.example.common.dto.CommonResponseDto;
+import org.example.customerservice.command.ApproveCustomerCreditCommand;
 import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeleteCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
@@ -58,6 +59,16 @@ public class CustomerCommandController {
 
         return commandGateway.send(command)
                 .thenApply(result -> CommonResponseDto.success("Customer deleted successfully"));
+    }
+
+    @PutMapping("/credit-approve/{customerId}")
+    public CompletableFuture<CommonResponseDto<Void>> creditApprove(@PathVariable("customerId") UUID customerId) {
+        ApproveCustomerCreditCommand command = ApproveCustomerCreditCommand.builder()
+                .customerId(customerId)
+                .build();
+
+        return commandGateway.send(command)
+                .thenApply(result -> CommonResponseDto.success("Customer credit approved successfully"));
     }
 }
 

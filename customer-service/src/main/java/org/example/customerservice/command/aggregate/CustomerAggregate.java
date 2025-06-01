@@ -7,9 +7,11 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.commands.ValidateCustomerCommand;
 import org.example.common.events.*;
+import org.example.customerservice.command.ApproveCustomerCreditCommand;
 import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeleteCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
+import org.example.customerservice.command.events.CustomerCreditApprovedEvent;
 import org.springframework.beans.BeanUtils;
 
 import java.util.UUID;
@@ -103,6 +105,18 @@ public class CustomerAggregate {
 
     @EventSourcingHandler
     public void on(CustomerValidationFailedEvent event) {
+    }
+
+    @CommandHandler
+    public void handle(ApproveCustomerCreditCommand command) {
+        CustomerCreditApprovedEvent customerCreditApprovedEvent = new CustomerCreditApprovedEvent();
+        BeanUtils.copyProperties(command, customerCreditApprovedEvent);
+        apply(customerCreditApprovedEvent);
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerCreditApprovedEvent event) {
+        this.creditApproved = true;
     }
 
 }

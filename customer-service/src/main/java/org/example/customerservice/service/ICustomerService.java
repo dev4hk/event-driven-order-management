@@ -12,4 +12,6 @@ public interface ICustomerService {
 
     List<Customer> getAllCustomers();
     Customer getCustomerById(UUID customerId);
+
+    void approveCredit(UUID customerId);
 }

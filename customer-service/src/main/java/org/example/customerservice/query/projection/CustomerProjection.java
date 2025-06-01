@@ -6,6 +6,7 @@ import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.CustomerCreatedEvent;
 import org.example.common.events.CustomerDeletedEvent;
 import org.example.common.events.CustomerUpdatedEvent;
+import org.example.customerservice.command.events.CustomerCreditApprovedEvent;
 import org.example.customerservice.entity.Customer;
 import org.example.customerservice.service.ICustomerService;
 import org.springframework.beans.BeanUtils;
@@ -35,5 +36,10 @@ public class CustomerProjection {
     @EventHandler
     public void on(CustomerDeletedEvent event) {
         iCustomerService.deleteCustomer(event.getCustomerId());
+    }
+
+    @EventHandler
+    public void on(CustomerCreditApprovedEvent event) {
+        iCustomerService.approveCredit(event.getCustomerId());
     }
 }

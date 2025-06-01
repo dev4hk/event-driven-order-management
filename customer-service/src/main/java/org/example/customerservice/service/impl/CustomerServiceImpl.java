@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.customerservice.entity.Customer;
+import org.example.customerservice.exception.InvalidCustomerStateException;
 import org.example.customerservice.repository.CustomerRepository;
 import org.example.customerservice.service.ICustomerService;
 import org.springframework.stereotype.Service;
@@ -55,5 +56,15 @@ public class CustomerServiceImpl implements ICustomerService {
     public Customer getCustomerById(UUID customerId) {
         return customerRepository.findByCustomerIdAndActive(customerId, true)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + customerId + " not found"));
+    }
+
+    @Override
+    public void approveCredit(UUID customerId) {
+        Customer customer = getCustomerById(customerId);
+        if (customer.isCreditApproved()) {
+            throw new InvalidCustomerStateException("Customer is already approved");
+        }
+        customer.setCreditApproved(true);
+        customerRepository.save(customer);
     }
 }
