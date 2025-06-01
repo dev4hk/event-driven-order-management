@@ -68,8 +68,8 @@ public class ShippingAggregate {
 
     @CommandHandler
     public void handle(DeliverShippingCommand command) {
-        if (this.status != ShippingStatus.DELIVERED) {
-            throw new InvalidShippingStateException("Cannot update shipping status before it has been delivered.");
+        if (this.status != ShippingStatus.SHIPPED) {
+            throw new InvalidShippingStateException("Cannot update shipping status as DELIVERED if it is not SHIPPED.");
         }
         ShippingDeliveredEvent event = new ShippingDeliveredEvent();
         BeanUtils.copyProperties(command, event);
