@@ -1,12 +1,12 @@
 package org.example.customerservice.command.events;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class CustomerCreditApprovedEvent {
     private UUID customerId;
 }
