@@ -17,4 +17,8 @@ public class CreateOrderCommand {
     private final UUID customerId;
     private final List<OrderItemDto> items;
     private final BigDecimal totalAmount;
+    private final String address;
+    private final String city;
+    private final String state;
+    private final String zipCode;
 }

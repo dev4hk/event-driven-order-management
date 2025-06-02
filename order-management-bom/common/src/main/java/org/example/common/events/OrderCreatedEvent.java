@@ -15,6 +15,10 @@ public class OrderCreatedEvent {
     private UUID customerId;
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
     private OrderStatus status;
     private LocalDateTime createdAt;
 }

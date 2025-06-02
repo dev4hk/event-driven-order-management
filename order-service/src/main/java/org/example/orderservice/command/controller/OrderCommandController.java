@@ -33,6 +33,10 @@ public class OrderCommandController {
                 .customerId(dto.getCustomerId())
                 .items(dto.getItems())
                 .totalAmount(dto.getTotalAmount())
+                .address(dto.getAddress())
+                .city(dto.getCity())
+                .state(dto.getState())
+                .zipCode(dto.getZipCode())
                 .build();
 
         return commandGateway.send(command)
