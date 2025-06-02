@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -14,4 +15,5 @@ public class ReserveProductCommand {
     private UUID orderId;
     private UUID customerId;
     private int quantity;
+    private BigDecimal price;
 }

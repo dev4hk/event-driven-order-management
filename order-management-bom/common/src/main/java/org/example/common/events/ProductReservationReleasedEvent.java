@@ -13,5 +13,6 @@ public class ProductReservationReleasedEvent {
     private UUID orderId;
     private UUID customerId;
     private int quantity;
+    private boolean active;
 
 }

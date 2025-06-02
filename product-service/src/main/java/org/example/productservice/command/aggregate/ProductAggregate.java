@@ -95,6 +95,14 @@ public class ProductAggregate {
                     .build();
             apply(event);
         }
+        else if (command.getPrice() == null || this.price.compareTo(command.getPrice()) != 0) {
+            apply(ProductReservationFailedEvent.builder()
+                    .orderId(command.getOrderId())
+                    .productId(command.getProductId())
+                    .customerId(command.getCustomerId())
+                    .reason("Product price mismatch")
+                    .build());
+        }
         else {
             ProductReservedEvent event = ProductReservedEvent.builder()
                     .orderId(command.getOrderId())
@@ -102,6 +110,9 @@ public class ProductAggregate {
                     .customerId(command.getCustomerId())
                     .quantity(command.getQuantity())
                     .build();
+            if(command.getQuantity() == this.stock) {
+                event.setActive(false);
+            }
             apply(event);
         }
     }
@@ -109,6 +120,9 @@ public class ProductAggregate {
     @EventSourcingHandler
     public void on(ProductReservedEvent event) {
         this.stock -= event.getQuantity();
+        if(this.stock == 0) {
+            this.active = false;
+        }
     }
 
     @CommandHandler
@@ -119,11 +133,15 @@ public class ProductAggregate {
                 .customerId(command.getCustomerId())
                 .quantity(command.getQuantity())
                 .build();
+        if (this.stock + command.getQuantity() > 0) {
+            event.setActive(true);
+        }
         apply(event);
     }
 
     @EventSourcingHandler
     public void on(ProductReservationReleasedEvent event) {
         this.stock += event.getQuantity();
+        this.active = event.isActive();
     }
 }

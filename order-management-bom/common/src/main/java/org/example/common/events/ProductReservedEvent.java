@@ -13,4 +13,5 @@ public class ProductReservedEvent {
     private UUID productId;
     private UUID customerId;
     private int quantity;
+    private boolean active;
 }

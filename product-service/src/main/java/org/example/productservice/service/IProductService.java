@@ -11,6 +11,6 @@ public interface IProductService {
     void deleteProduct(UUID productId);
     List<Product> getAllProducts();
     Product getProductById(UUID productId);
-    void reserveProduct(UUID productId, int quantity);
-    void releaseProductReservation(UUID productId, int quantity);
+    void reserveProduct(UUID productId, int quantity, boolean isActive);
+    void releaseProductReservation(UUID productId, int quantity, boolean isActive);
 }

@@ -37,12 +37,12 @@ public class ProductProjection {
 
     @EventHandler
     public void on(ProductReservedEvent event) {
-        iProductService.reserveProduct(event.getProductId(), event.getQuantity());
+        iProductService.reserveProduct(event.getProductId(), event.getQuantity(), event.isActive());
     }
 
     @EventHandler
     public void on(ProductReservationReleasedEvent event) {
-        iProductService.releaseProductReservation(event.getProductId(), event.getQuantity());
+        iProductService.releaseProductReservation(event.getProductId(), event.getQuantity(), event.isActive());
     }
 }
 

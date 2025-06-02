@@ -89,6 +89,7 @@ public class OrderSaga {
                     .productId(item.getProductId())
                     .customerId(customerId)
                     .quantity(item.getQuantity())
+                    .price(item.getPrice())
                     .build();
             commandGateway.send(reserveProductCommand);
         }

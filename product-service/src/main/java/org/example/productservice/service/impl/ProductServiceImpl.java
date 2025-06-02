@@ -53,19 +53,21 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public void reserveProduct(UUID productId, int quantity) {
+    public void reserveProduct(UUID productId, int quantity, boolean isActive) {
         Product product = getProductById(productId);
         if (product.getStock() < quantity) {
             throw new InvalidProductDataException("Not enough stock for product " + productId);
         }
         product.setStock(product.getStock() - quantity);
+        product.setActive(isActive);
         productRepository.save(product);
     }
 
     @Override
-    public void releaseProductReservation(UUID productId, int quantity) {
+    public void releaseProductReservation(UUID productId, int quantity, boolean isActive) {
         Product product = getProductById(productId);
         product.setStock(product.getStock() + quantity);
+        product.setActive(isActive);
         productRepository.save(product);
     }
 }
