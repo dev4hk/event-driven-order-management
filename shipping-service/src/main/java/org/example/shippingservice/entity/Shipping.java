@@ -23,6 +23,18 @@ public class Shipping {
 
     private UUID orderId;
 
+    private UUID customerId;
+
+    private String address;
+
+    private String city;
+
+    private String state;
+
+    private String zipCode;
+
+    private String customerName;
+
     @Enumerated(EnumType.STRING)
     private ShippingStatus status;
 

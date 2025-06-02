@@ -11,4 +11,5 @@ public class ShippingProcessedEvent {
     private UUID shippingId;
     private ShippingStatus newStatus;
     private LocalDateTime updatedAt;
+    private LocalDateTime shippedAt;
 }

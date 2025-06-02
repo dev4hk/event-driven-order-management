@@ -17,5 +17,9 @@ public class CreateShippingCommand {
     private UUID shippingId;
     private UUID orderId;
     private UUID customerId;
-    private UUID paymentId;
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
+    private String customerName;
 }

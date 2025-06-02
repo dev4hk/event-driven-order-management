@@ -28,7 +28,12 @@ public class ShippingAggregate {
     private UUID shippingId;
     private UUID orderId;
     private UUID customerId;
-    private UUID paymentId;
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
+    private String customerName;
+    private LocalDateTime shippedAt;
     private ShippingStatus status;
 
     @CommandHandler
@@ -37,7 +42,7 @@ public class ShippingAggregate {
         ShippingCreatedEvent event = new ShippingCreatedEvent();
         BeanUtils.copyProperties(command, event);
         event.setStatus(ShippingStatus.PENDING);
-        event.setShippedAt(LocalDateTime.now());
+        event.setUpdatedAt(LocalDateTime.now());
         apply(event);
     }
 
@@ -46,8 +51,12 @@ public class ShippingAggregate {
         this.shippingId = event.getShippingId();
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
-        this.paymentId = event.getPaymentId();
         this.status = event.getStatus();
+        this.address = event.getAddress();
+        this.city = event.getCity();
+        this.state = event.getState();
+        this.zipCode = event.getZipCode();
+        this.customerName = event.getCustomerName();
     }
 
     @CommandHandler
@@ -58,6 +67,7 @@ public class ShippingAggregate {
         ShippingProcessedEvent event = new ShippingProcessedEvent();
         BeanUtils.copyProperties(command, event);
         event.setUpdatedAt(LocalDateTime.now());
+        event.setShippedAt(LocalDateTime.now());
         apply(event);
     }
 

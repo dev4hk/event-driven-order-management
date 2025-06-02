@@ -94,6 +94,8 @@ public class CustomerAggregate {
             CustomerValidatedEvent customerValidatedEvent = CustomerValidatedEvent.builder()
                     .customerId(command.getCustomerId())
                     .orderId(command.getOrderId())
+                    .customerName(this.name)
+                    .customerEmail(this.email)
                     .build();
             apply(customerValidatedEvent);
         }

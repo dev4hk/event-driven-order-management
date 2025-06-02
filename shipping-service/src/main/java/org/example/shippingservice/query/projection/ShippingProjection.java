@@ -24,7 +24,6 @@ public class ShippingProjection {
     public void on(ShippingCreatedEvent event) {
         Shipping shipping = new Shipping();
         BeanUtils.copyProperties(event, shipping);
-        shipping.setUpdatedAt(LocalDateTime.now());
         shippingService.createShipping(shipping);
     }
 

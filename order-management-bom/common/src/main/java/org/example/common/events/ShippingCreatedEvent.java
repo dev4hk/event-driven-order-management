@@ -11,7 +11,11 @@ public class ShippingCreatedEvent {
     private UUID shippingId;
     private UUID orderId;
     private UUID customerId;
-    private UUID paymentId;
-    private LocalDateTime shippedAt;
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
+    private String customerName;
     private ShippingStatus status;
+    private LocalDateTime updatedAt;
 }

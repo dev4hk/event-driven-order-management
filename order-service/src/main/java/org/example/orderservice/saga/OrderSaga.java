@@ -39,6 +39,15 @@ public class OrderSaga {
     private Set<UUID> failedProducts = new HashSet<>();
     private Set<UUID> releasedProducts = new HashSet<>();
 
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
+
+    private BigDecimal totalAmount;
+    private String customerName;
+    private String customerEmail;
+
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderCreatedEvent event) {
@@ -48,6 +57,11 @@ public class OrderSaga {
         this.customerId = event.getCustomerId();
         this.items = event.getItems();
         this.createdAt = event.getCreatedAt();
+        this.totalAmount = event.getTotalAmount();
+        this.address = event.getAddress();
+        this.city = event.getCity();
+        this.state = event.getState();
+        this.zipCode = event.getZipCode();
 
         if (items.isEmpty()) {
             cancelOrder("No products in order");
@@ -82,6 +96,8 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(CustomerValidatedEvent event) {
         log.info("[Saga] Received CustomerValidatedEvent for customerId {}. Reserving {} products", event.getCustomerId(), items.size());
+        this.customerName = event.getCustomerName();
+        this.customerEmail = event.getCustomerEmail();
 
         for (OrderItemDto item : this.items) {
             ReserveProductCommand reserveProductCommand = ReserveProductCommand.builder()
@@ -96,16 +112,16 @@ public class OrderSaga {
     }
 
     @SagaEventHandler(associationProperty = "orderId")
-    public void on(ProductReservedEvent command) {
-        log.info("[Saga] Received ProductReservedEvent for productId {}", command.getProductId());
-        this.reservedProducts.put(command.getProductId(), command.getQuantity());
+    public void on(ProductReservedEvent event) {
+        log.info("[Saga] Received ProductReservedEvent for productId {}", event.getProductId());
+        this.reservedProducts.put(event.getProductId(), event.getQuantity());
         checkReservationCompletion();
     }
 
     @SagaEventHandler(associationProperty = "orderId")
-    public void on(ProductReservationFailedEvent command) {
-        log.info("[Saga] Received ProductReservationFailedEvent for productId {}", command.getProductId());
-        this.failedProducts.add(command.getProductId());
+    public void on(ProductReservationFailedEvent event) {
+        log.info("[Saga] Received ProductReservationFailedEvent for productId {}", event.getProductId());
+        this.failedProducts.add(event.getProductId());
         checkReservationCompletion();
     }
 
@@ -177,7 +193,11 @@ public class OrderSaga {
                 .shippingId(this.shippingId)
                 .orderId(orderId)
                 .customerId(customerId)
-                .paymentId(paymentId)
+                .address(address)
+                .city(city)
+                .state(state)
+                .zipCode(zipCode)
+                .customerName(customerName)
                 .build();
         commandGateway.send(createShippingCommand);
     }

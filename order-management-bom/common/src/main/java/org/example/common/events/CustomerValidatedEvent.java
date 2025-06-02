@@ -11,5 +11,7 @@ public class CustomerValidatedEvent {
 
     private UUID customerId;
     private UUID orderId;
+    private String customerName;
+    private String customerEmail;
 
 }

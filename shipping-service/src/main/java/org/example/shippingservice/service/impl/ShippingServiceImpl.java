@@ -2,6 +2,7 @@ package org.example.shippingservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.shippingservice.entity.Shipping;
 import org.example.shippingservice.repository.ShippingRepository;
@@ -40,7 +41,7 @@ public class ShippingServiceImpl implements IShippingService {
     public void createShipping(Shipping shipping) {
         Optional<Shipping> existingShipping = shippingRepository.findByOrderId(shipping.getOrderId());
         if (existingShipping.isPresent()) {
-            throw new IllegalArgumentException("Shipping already exists for order ID: " + shipping.getOrderId());
+            throw new ResourceAlreadyExistsException("Shipping already exists for order ID: " + shipping.getOrderId());
         }
         shippingRepository.save(shipping);
     }
