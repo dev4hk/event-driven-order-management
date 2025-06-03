@@ -6,7 +6,6 @@ import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.OrderCancelledEvent;
 import org.example.common.events.OrderCompletedEvent;
 import org.example.common.events.OrderCreatedEvent;
-import org.example.common.events.OrderUpdatedEvent;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.service.IOrderService;
 import org.springframework.beans.BeanUtils;
@@ -24,13 +23,6 @@ public class OrderProjection {
         Order order = new Order();
         BeanUtils.copyProperties(event, order);
         iOrderService.createOrder(order);
-    }
-
-    @EventHandler
-    public void on(OrderUpdatedEvent event) {
-        Order order = new Order();
-        BeanUtils.copyProperties(event, order);
-        iOrderService.updateOrder(order);
     }
 
     @EventHandler

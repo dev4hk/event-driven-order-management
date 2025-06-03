@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.common.constants.OrderStatus;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.orderservice.entity.Order;
-import org.example.orderservice.entity.OrderItem;
 import org.example.orderservice.repository.OrderRepository;
 import org.example.orderservice.service.IOrderService;
 import org.springframework.stereotype.Service;
@@ -25,28 +24,9 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     private void setOrderInOrderItems(Order order) {
-        if(order.getItems() != null) {
+        if (order.getItems() != null) {
             order.getItems().forEach(orderItem -> orderItem.setOrder(order));
         }
-    }
-
-    @Override
-    public void updateOrder(Order updatedOrder) {
-        Order existingOrder = orderRepository.findById(updatedOrder.getOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + updatedOrder.getOrderId() + " not found"));
-        existingOrder.getItems().clear();
-
-        List<OrderItem> updatedItems = updatedOrder.getItems();
-        if (updatedItems != null) {
-            updatedItems.forEach(item -> item.setOrder(existingOrder));
-            existingOrder.getItems().addAll(updatedItems);
-        }
-
-        existingOrder.setCustomerId(updatedOrder.getCustomerId());
-        existingOrder.setTotalAmount(updatedOrder.getTotalAmount());
-        existingOrder.setStatus(updatedOrder.getStatus());
-
-        orderRepository.save(existingOrder);
     }
 
     @Override
