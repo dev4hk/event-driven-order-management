@@ -52,6 +52,7 @@ public class CancelOrderSaga {
 
         ValidateCustomerCommand validateCustomerCommand = ValidateCustomerCommand.builder()
                 .customerId(event.getCustomerId())
+                .orderId(event.getOrderId())
                 .build();
         commandGateway.send(validateCustomerCommand);
     }

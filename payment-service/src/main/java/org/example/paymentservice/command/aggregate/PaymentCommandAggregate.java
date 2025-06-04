@@ -6,6 +6,7 @@ import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
+import org.example.common.commands.CancelPaymentCommand;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.events.PaymentCancelledEvent;
 import org.example.common.events.PaymentProcessedEvent;
@@ -77,7 +78,7 @@ public class PaymentCommandAggregate {
     }
 
     @CommandHandler
-    public void handle(CreatePaymentCommand command) {
+    public void handle(CancelPaymentCommand command) {
         if (!this.status.equals(PaymentStatus.COMPLETED)) {
             throw new InvalidPaymentStateException("Cannot cancel a payment that is not completed.");
         }
