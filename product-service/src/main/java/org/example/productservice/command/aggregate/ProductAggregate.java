@@ -9,8 +9,8 @@ import org.example.common.commands.ReleaseProductReservationCommand;
 import org.example.common.commands.ReserveProductCommand;
 import org.example.common.events.*;
 import org.example.productservice.command.CreateProductCommand;
-import org.example.productservice.command.UpdateProductCommand;
 import org.example.productservice.command.DeleteProductCommand;
+import org.example.productservice.command.UpdateProductCommand;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
@@ -110,9 +110,7 @@ public class ProductAggregate {
                     .customerId(command.getCustomerId())
                     .quantity(command.getQuantity())
                     .build();
-            if(command.getQuantity() == this.stock) {
-                event.setActive(false);
-            }
+            event.setActive(command.getQuantity() != this.stock);
             apply(event);
         }
     }
@@ -120,9 +118,7 @@ public class ProductAggregate {
     @EventSourcingHandler
     public void on(ProductReservedEvent event) {
         this.stock -= event.getQuantity();
-        if(this.stock == 0) {
-            this.active = false;
-        }
+        this.active = event.isActive();
     }
 
     @CommandHandler
