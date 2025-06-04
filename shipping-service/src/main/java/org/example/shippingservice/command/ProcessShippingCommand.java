@@ -16,5 +16,4 @@ import java.util.UUID;
 public class ProcessShippingCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
-    private ShippingStatus newStatus;
 }

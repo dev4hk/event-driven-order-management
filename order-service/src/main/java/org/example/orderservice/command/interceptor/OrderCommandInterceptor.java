@@ -10,7 +10,7 @@ import org.example.common.exception.ResourceNotFoundException;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.CompleteOrderCommand;
 import org.example.orderservice.command.CreateOrderCommand;
-import org.example.orderservice.command.UpdateOrderCommand;
+import org.example.orderservice.command.RequestOrderCancellationCommand;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.exception.InvalidOrderDataException;
 import org.example.orderservice.exception.OrderLifecycleViolationException;
@@ -35,15 +35,21 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
             Class<?> payloadType = command.getPayloadType();
             if (payloadType.equals(CreateOrderCommand.class)) {
                 validateCreateOrder((CreateOrderCommand) command.getPayload());
-            } else if (payloadType.equals(UpdateOrderCommand.class)) {
-                validateUpdateOrder((UpdateOrderCommand) command.getPayload());
             } else if (payloadType.equals(CancelOrderCommand.class)) {
                 validateCancelOrder((CancelOrderCommand) command.getPayload());
             } else if(payloadType.equals(CompleteOrderCommand.class)) {
                 validateCompleteOrder((CompleteOrderCommand) command.getPayload());
+            } else if(payloadType.equals(RequestOrderCancellationCommand.class)) {
+                validateRequestOrderCancellation((RequestOrderCancellationCommand) command.getPayload());
             }
             return command;
         };
+    }
+
+    private void validateRequestOrderCancellation(RequestOrderCancellationCommand command) {
+        if (!orderRepository.existsById(command.getOrderId())) {
+            throw new ResourceNotFoundException("Order with ID " + command.getOrderId() + " does not exist.");
+        }
     }
 
     private void validateCompleteOrder(CompleteOrderCommand command) {
@@ -66,17 +72,6 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         validateTotalAmount(command.getTotalAmount());
     }
 
-    private void validateUpdateOrder(UpdateOrderCommand command) {
-        Order existingOrder = orderRepository.findById(command.getOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Order with ID " + command.getOrderId() + " does not exist."));
-
-        if (existingOrder.getStatus() == OrderStatus.CANCELLED || existingOrder.getStatus() == OrderStatus.COMPLETED) {
-            throw new OrderLifecycleViolationException("Cannot update an order that is " + existingOrder.getStatus());
-        }
-
-        validateOrderItems(command.getItems());
-        validateTotalAmount(command.getTotalAmount());
-    }
 
     private void validateCancelOrder(CancelOrderCommand command) {
         Order existingOrder = orderRepository.findById(command.getOrderId())

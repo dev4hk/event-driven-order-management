@@ -1,12 +1,11 @@
--- Schema for Product Service
-CREATE SCHEMA IF NOT EXISTS product_service;
+DROP TABLE IF EXISTS product;
 
--- Product Table
-CREATE TABLE IF NOT EXISTS product_service.products (
-    product_id UUID PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    price DECIMAL(19, 2) NOT NULL,
-    stock INTEGER NOT NULL,
-    active BOOLEAN DEFAULT true
+CREATE TABLE product
+(
+    product_id  UUID PRIMARY KEY,
+    name        VARCHAR(100)   NOT NULL,
+    description VARCHAR(255)   NOT NULL,
+    price       DECIMAL(15, 2) NOT NULL,
+    stock       INT            NOT NULL,
+    active      BOOLEAN        NOT NULL
 );

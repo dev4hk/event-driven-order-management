@@ -5,7 +5,9 @@ import org.example.orderservice.dto.OrderResponseDto;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.entity.OrderItem;
 
+import java.util.ArrayList; // Import ArrayList
 import java.util.List;
+import java.util.stream.Collectors; // Import Collectors
 
 public class OrderMapper {
 
@@ -15,9 +17,14 @@ public class OrderMapper {
         dto.setCustomerId(order.getCustomerId());
         dto.setTotalAmount(order.getTotalAmount());
         dto.setStatus(order.getStatus().name());
-        dto.setCreatedAt(order.getCreatedAt());
+        dto.setPaymentId(order.getPaymentId());
+        dto.setShippingId(order.getShippingId());
+        dto.setUpdatedAt(order.getUpdatedAt());
 
-        List<OrderItemDto> items = order.getItems().stream().map(OrderMapper::toItemDto).toList();
+        List<OrderItemDto> items = order.getItems().stream()
+                .map(OrderMapper::toItemDto)
+                .collect(Collectors.toCollection(ArrayList::new));
+
         dto.setItems(items);
 
         return dto;
@@ -31,4 +38,3 @@ public class OrderMapper {
         return dto;
     }
 }
-

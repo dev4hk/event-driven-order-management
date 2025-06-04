@@ -10,9 +10,13 @@ import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.example.common.commands.*;
+import org.example.common.constants.OrderStatus;
+import org.example.common.constants.PaymentStatus;
+import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
+import org.example.orderservice.command.CompleteOrderCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
@@ -22,7 +26,7 @@ import java.util.*;
 
 @Saga
 @Slf4j
-public class OrderSaga {
+public class CreateOrderSaga {
 
     @Autowired
     private transient CommandGateway commandGateway;
@@ -47,6 +51,9 @@ public class OrderSaga {
     private BigDecimal totalAmount;
     private String customerName;
     private String customerEmail;
+
+    private PaymentStatus paymentStatus;
+    private ShippingStatus shippingStatus;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -189,6 +196,8 @@ public class OrderSaga {
         log.info("[Saga] Received PaymentProcessedEvent for paymentId {}", event.getPaymentId());
 
         this.shippingId = UUID.randomUUID();
+        this.paymentStatus = event.getStatus();
+        this.totalAmount = event.getAmount();
         CreateShippingCommand createShippingCommand = CreateShippingCommand.builder()
                 .shippingId(this.shippingId)
                 .orderId(orderId)
@@ -202,10 +211,29 @@ public class OrderSaga {
         commandGateway.send(createShippingCommand);
     }
 
-    @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(ShippingCreatedEvent event) {
         log.info("[Saga] Received ShippingCreatedEvent for shippingId {}", event.getShippingId());
+        CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
+                .orderId(orderId)
+                .customerId(customerId)
+                .paymentId(paymentId)
+                .shippingId(event.getShippingId())
+                .orderStatus(OrderStatus.COMPLETED)
+                .paymentStatus(paymentStatus)
+                .shippingStatus(event.getStatus())
+                .customerName(customerName)
+                .customerEmail(customerEmail)
+                .totalAmount(totalAmount)
+                .completedAt(LocalDateTime.now())
+                .build();
+        commandGateway.send(completeOrderCommand);
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(OrderCompletedEvent event) {
+        log.info("[Saga] Received OrderCompletedEvent for orderId {}", event.getOrderId());
     }
 
     @SagaEventHandler(associationProperty = "orderId")

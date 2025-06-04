@@ -38,10 +38,8 @@ public class Shipping {
     @Enumerated(EnumType.STRING)
     private ShippingStatus status;
 
-    private LocalDateTime shippedAt;
-
     private LocalDateTime updatedAt;
 
-    private LocalDateTime deliveredAt;
+    private String reason;
 }
 

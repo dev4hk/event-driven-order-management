@@ -13,4 +13,5 @@ public interface IShippingService {
     List<Shipping> getAll();
     void createShipping(Shipping shipping);
     void updateShippingStatus(UUID shippingId, ShippingStatus newStatus, LocalDateTime updatedAt);
+    void cancelShipping(UUID shippingId, String reason, ShippingStatus status, LocalDateTime cancelledAt);
 }

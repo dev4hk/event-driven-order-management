@@ -1,12 +1,14 @@
 package org.example.paymentservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.common.constants.PaymentStatus;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.paymentservice.entity.Payment;
 import org.example.paymentservice.repository.PaymentRepository;
 import org.example.paymentservice.service.IPaymentService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,5 +38,15 @@ public class PaymentServiceImpl implements IPaymentService {
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
     }
+
+    @Override
+    public void cancelPayment(UUID paymentId, PaymentStatus status, String reason, LocalDateTime cancelledAt) {
+        Payment payment = getPaymentById(paymentId);
+        payment.setStatus(status);
+        payment.setReason(reason);
+        payment.setUpdatedAt(cancelledAt);
+        paymentRepository.save(payment);
+    }
+
 
 }

@@ -52,10 +52,16 @@ public class ShippingServiceImpl implements IShippingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with ID: " + shippingId));
         existingShipping.setStatus(newStatus);
         existingShipping.setUpdatedAt(updatedAt);
-        if (newStatus == ShippingStatus.DELIVERED) {
-            existingShipping.setDeliveredAt(updatedAt);
-        }
 
+        shippingRepository.save(existingShipping);
+    }
+
+    @Override
+    public void cancelShipping(UUID shippingId, String reason, ShippingStatus status, LocalDateTime cancelledAt) {
+        Shipping existingShipping = getById(shippingId);
+        existingShipping.setStatus(status);
+        existingShipping.setUpdatedAt(cancelledAt);
+        existingShipping.setReason(reason);
         shippingRepository.save(existingShipping);
     }
 }

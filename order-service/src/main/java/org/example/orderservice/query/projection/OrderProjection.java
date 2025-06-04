@@ -27,12 +27,24 @@ public class OrderProjection {
 
     @EventHandler
     public void on(OrderCancelledEvent event) {
-        iOrderService.cancelOrder(event.getOrderId(), event.getStatus(), event.getReason());
+        iOrderService.cancelOrder(event.getOrderId(), event.getStatus(), event.getReason(), event.getCancelledAt());
     }
 
     @EventHandler
     public void on(OrderCompletedEvent event) {
-        iOrderService.updateOrderStatus(event.getOrderId(), event.getStatus());
+        iOrderService.updateOrderStatus(
+                event.getOrderId(),
+                event.getCustomerId(),
+                event.getPaymentId(),
+                event.getShippingId(),
+                event.getTotalAmount(),
+                event.getOrderStatus(),
+                event.getPaymentStatus(),
+                event.getShippingStatus(),
+                event.getCompletedAt(),
+                event.getCustomerName(),
+                event.getCustomerEmail()
+        );
     }
 
 }

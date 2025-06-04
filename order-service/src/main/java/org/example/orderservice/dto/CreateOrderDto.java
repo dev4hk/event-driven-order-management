@@ -2,7 +2,9 @@ package org.example.orderservice.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.common.dto.OrderItemDto;
 
 import java.math.BigDecimal;
@@ -10,6 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateOrderDto {
 
     @NotNull(message = "Customer ID must not be null")

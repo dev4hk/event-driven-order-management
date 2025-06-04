@@ -43,8 +43,6 @@ public class ShippingQueryHandler {
                 .shippingId(shipping.getShippingId())
                 .orderId(shipping.getOrderId())
                 .status(shipping.getStatus())
-                .shippedAt(shipping.getShippedAt())
-                .deliveredAt(shipping.getDeliveredAt())
                 .updatedAt(shipping.getUpdatedAt())
                 .build();
     }

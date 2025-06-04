@@ -7,11 +7,15 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.constants.PaymentStatus;
+import org.example.common.events.PaymentCancelledEvent;
 import org.example.common.events.PaymentProcessedEvent;
 import org.example.common.commands.CreatePaymentCommand;
 import org.example.common.events.PaymentFailedEvent;
+import org.example.paymentservice.exception.InvalidPaymentStateException;
+import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Aggregate
@@ -25,6 +29,7 @@ public class PaymentCommandAggregate {
     private BigDecimal amount;
     private PaymentStatus status;
     private String reason;
+    private LocalDateTime updatedAt;
 
     @CommandHandler
     public PaymentCommandAggregate(CreatePaymentCommand command) {
@@ -69,5 +74,28 @@ public class PaymentCommandAggregate {
         this.amount = event.getAmount();
         this.status = event.getStatus();
         this.reason = event.getReason();
+    }
+
+    @CommandHandler
+    public void handle(CreatePaymentCommand command) {
+        if (!this.status.equals(PaymentStatus.COMPLETED)) {
+            throw new InvalidPaymentStateException("Cannot cancel a payment that is not completed.");
+        }
+        PaymentCancelledEvent event = new PaymentCancelledEvent();
+        BeanUtils.copyProperties(command, event);
+        event.setStatus(PaymentStatus.CANCELLED);
+        event.setCancelledAt(LocalDateTime.now());
+        AggregateLifecycle.apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(PaymentCancelledEvent event) {
+        this.paymentId = event.getPaymentId();
+        this.orderId = event.getOrderId();
+        this.customerId = event.getCustomerId();
+        this.amount = event.getAmount();
+        this.status = event.getStatus();
+        this.reason = event.getReason();
+        this.updatedAt = event.getCancelledAt();
     }
 }

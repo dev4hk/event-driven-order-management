@@ -3,6 +3,7 @@ package org.example.shippingservice.query.projection;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
+import org.example.common.events.ShippingCancelledEvent;
 import org.example.common.events.ShippingCreatedEvent;
 import org.example.common.events.ShippingDeliveredEvent;
 import org.example.common.events.ShippingProcessedEvent;
@@ -29,12 +30,17 @@ public class ShippingProjection {
 
     @EventHandler
     public void on(ShippingProcessedEvent event) {
-        shippingService.updateShippingStatus(event.getShippingId(), event.getNewStatus(), event.getUpdatedAt());
+        shippingService.updateShippingStatus(event.getShippingId(), event.getStatus(), event.getUpdatedAt());
     }
 
     @EventHandler
     public void on(ShippingDeliveredEvent event) {
         shippingService.updateShippingStatus(event.getShippingId(), event.getNewStatus(), event.getUpdatedAt());
+    }
+
+    @EventHandler
+    public void on(ShippingCancelledEvent event) {
+        shippingService.cancelShipping(event.getShippingId(), event.getReason(), event.getStatus(), event.getCancelledAt());
     }
 
 

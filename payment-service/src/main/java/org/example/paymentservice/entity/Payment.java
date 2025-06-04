@@ -36,4 +36,6 @@ public class Payment {
     private String reason;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

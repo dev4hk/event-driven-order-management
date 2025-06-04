@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.common.constants.OrderStatus;
+import org.example.common.constants.PaymentStatus;
+import org.example.common.constants.ShippingStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,8 +40,7 @@ public class Order {
     @Column(length = 255)
     private String reason;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // Customer Info
     @Column(nullable = false)
@@ -69,9 +70,10 @@ public class Order {
     private UUID paymentId;
 
     @Column(length = 50)
-    private String paymentStatus;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;
 
     // Shipping Info
@@ -79,5 +81,6 @@ public class Order {
     private UUID shippingId;
 
     @Column(length = 50)
-    private String shippingStatus;
+    @Enumerated(EnumType.STRING)
+    private ShippingStatus shippingStatus;
 }

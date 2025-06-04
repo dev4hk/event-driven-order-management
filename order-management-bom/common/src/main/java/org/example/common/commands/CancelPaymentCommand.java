@@ -1,4 +1,4 @@
-package org.example.productservice.command;
+package org.example.common.commands;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +13,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateProductCommand {
+public class CancelPaymentCommand {
     @TargetAggregateIdentifier
-    private UUID productId;
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private int stock;
+    private UUID paymentId;
+    private UUID orderId;
+    private UUID customerId;
+    private BigDecimal amount;
+    private String reason;
 }

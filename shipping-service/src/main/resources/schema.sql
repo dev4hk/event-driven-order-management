@@ -1,15 +1,20 @@
--- Schema for Shipping Service
-CREATE SCHEMA IF NOT EXISTS shipping_service;
+DROP TABLE IF EXISTS shipping;
 
--- Shipping Table
-CREATE TABLE IF NOT EXISTS shipping_service.shipping (
-    shipping_id UUID PRIMARY KEY,
-    order_id UUID NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    shipped_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    delivered_at TIMESTAMP
+CREATE TABLE shipping
+(
+    shipping_id   UUID PRIMARY KEY,
+    order_id      UUID         NOT NULL,
+    customer_id   UUID         NOT NULL,
+    address       VARCHAR(255) NOT NULL,
+    city          VARCHAR(100) NOT NULL,
+    state         VARCHAR(100) NOT NULL,
+    zip_code      VARCHAR(20)  NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    status        VARCHAR(50)  NOT NULL,
+    updated_at    TIMESTAMP    NOT NULL,
+    reason        VARCHAR(255)
 );
 
--- Indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_shipping_order_id ON shipping_service.shipping(order_id);
+CREATE INDEX idx_shipping_order_id ON shipping (order_id);
+CREATE INDEX idx_shipping_customer_id ON shipping (customer_id);
+CREATE INDEX idx_shipping_status ON shipping (status);

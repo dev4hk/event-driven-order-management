@@ -1,4 +1,4 @@
-package org.example.common.events;
+package org.example.orderservice.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,10 +11,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerValidationFailedEvent {
-
-    private UUID customerId;
+public class RollbackCancelOrderCommand {
     private UUID orderId;
-    private String reason;
-
 }

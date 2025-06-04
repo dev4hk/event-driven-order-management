@@ -5,7 +5,9 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
+import org.example.common.commands.CancelShippingCommand;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.events.ShippingCancelledEvent;
 import org.example.common.events.ShippingCreatedEvent;
 import org.example.common.events.ShippingDeliveredEvent;
 import org.example.common.events.ShippingProcessedEvent;
@@ -33,8 +35,9 @@ public class ShippingAggregate {
     private String state;
     private String zipCode;
     private String customerName;
-    private LocalDateTime shippedAt;
     private ShippingStatus status;
+    private String reason;
+    private LocalDateTime updatedAt;
 
     @CommandHandler
     public ShippingAggregate(CreateShippingCommand command) {
@@ -51,12 +54,13 @@ public class ShippingAggregate {
         this.shippingId = event.getShippingId();
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
-        this.status = event.getStatus();
         this.address = event.getAddress();
         this.city = event.getCity();
         this.state = event.getState();
         this.zipCode = event.getZipCode();
         this.customerName = event.getCustomerName();
+        this.status = event.getStatus();
+        this.updatedAt = event.getUpdatedAt();
     }
 
     @CommandHandler
@@ -67,13 +71,14 @@ public class ShippingAggregate {
         ShippingProcessedEvent event = new ShippingProcessedEvent();
         BeanUtils.copyProperties(command, event);
         event.setUpdatedAt(LocalDateTime.now());
-        event.setShippedAt(LocalDateTime.now());
+        event.setStatus(ShippingStatus.SHIPPED);
         apply(event);
     }
 
     @EventSourcingHandler
     public void on(ShippingProcessedEvent event) {
-        this.status = event.getNewStatus();
+        this.status = event.getStatus();
+        this.updatedAt = event.getUpdatedAt();
     }
 
     @CommandHandler
@@ -90,5 +95,24 @@ public class ShippingAggregate {
     @EventSourcingHandler
     public void on(ShippingDeliveredEvent event) {
         this.status = event.getNewStatus();
+    }
+
+    @CommandHandler
+    public void handle(CancelShippingCommand command) {
+        if (this.status != ShippingStatus.PENDING) {
+            throw new InvalidShippingStateException("Cannot update shipping status as CANCELLED if it is not PENDING.");
+        }
+        ShippingCancelledEvent event = new ShippingCancelledEvent();
+        BeanUtils.copyProperties(command, event);
+        event.setStatus(ShippingStatus.CANCELLED);
+        event.setCancelledAt(LocalDateTime.now());
+        apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(ShippingCancelledEvent event) {
+        this.status = event.getStatus();
+        this.reason = event.getReason();
+        this.updatedAt = event.getCancelledAt();
     }
 }

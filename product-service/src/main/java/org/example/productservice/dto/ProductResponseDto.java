@@ -1,12 +1,16 @@
 package org.example.productservice.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.productservice.entity.Product;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductResponseDto {
     private UUID productId;
     private String name;

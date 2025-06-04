@@ -1,7 +1,9 @@
 package org.example.orderservice.command;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.example.common.dto.OrderItemDto;
 
@@ -11,14 +13,16 @@ import java.util.UUID;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateOrderCommand {
     @TargetAggregateIdentifier
-    private final UUID orderId;
-    private final UUID customerId;
-    private final List<OrderItemDto> items;
-    private final BigDecimal totalAmount;
-    private final String address;
-    private final String city;
-    private final String state;
-    private final String zipCode;
+    private UUID orderId;
+    private UUID customerId;
+    private List<OrderItemDto> items;
+    private BigDecimal totalAmount;
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
 }

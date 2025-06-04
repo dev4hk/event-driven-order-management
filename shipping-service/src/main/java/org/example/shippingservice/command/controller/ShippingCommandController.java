@@ -22,7 +22,6 @@ public class ShippingCommandController {
     public CompletableFuture<CommonResponseDto<String>> ship(@PathVariable("shippingId") UUID shippingId) {
         ProcessShippingCommand command = ProcessShippingCommand.builder()
                 .shippingId(shippingId)
-                .newStatus(ShippingStatus.SHIPPED)
                 .build();
         return commandGateway.send(command)
                 .thenApply(result -> CommonResponseDto.success("Shipping processed", shippingId.toString()));
