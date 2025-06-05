@@ -4,6 +4,7 @@ import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.orderservice.entity.Order;
+import org.example.orderservice.entity.OrderItem;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,7 +27,8 @@ public interface IOrderService {
             ShippingStatus shippingStatus,
             LocalDateTime updatedAt,
             String customerName,
-            String customerEmail
+            String customerEmail,
+            List<OrderItem> items
     );
     void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt);
 }

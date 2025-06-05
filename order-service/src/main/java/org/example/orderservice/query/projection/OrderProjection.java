@@ -7,9 +7,13 @@ import org.example.common.events.OrderCancelledEvent;
 import org.example.common.events.OrderCompletedEvent;
 import org.example.common.events.OrderCreatedEvent;
 import org.example.orderservice.entity.Order;
+import org.example.orderservice.entity.OrderItem;
+import org.example.orderservice.mapper.OrderMapper;
 import org.example.orderservice.service.IOrderService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -32,6 +36,7 @@ public class OrderProjection {
 
     @EventHandler
     public void on(OrderCompletedEvent event) {
+        List<OrderItem> items = OrderMapper.toEntityList(event.getItems());
         iOrderService.updateOrderStatus(
                 event.getOrderId(),
                 event.getCustomerId(),
@@ -43,7 +48,8 @@ public class OrderProjection {
                 event.getShippingStatus(),
                 event.getCompletedAt(),
                 event.getCustomerName(),
-                event.getCustomerEmail()
+                event.getCustomerEmail(),
+                items
         );
     }
 

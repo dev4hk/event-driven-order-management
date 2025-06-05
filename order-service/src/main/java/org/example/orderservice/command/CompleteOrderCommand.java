@@ -8,9 +8,11 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.dto.OrderItemDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -30,4 +32,5 @@ public class CompleteOrderCommand {
     private String customerEmail;
     private String customerName;
     private LocalDateTime completedAt;
+    private List<OrderItemDto> items;
 }

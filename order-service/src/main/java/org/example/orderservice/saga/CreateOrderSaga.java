@@ -226,6 +226,7 @@ public class CreateOrderSaga {
                 .customerEmail(customerEmail)
                 .totalAmount(totalAmount)
                 .completedAt(LocalDateTime.now())
+                .items(items)
                 .build();
         commandGateway.send(completeOrderCommand);
     }

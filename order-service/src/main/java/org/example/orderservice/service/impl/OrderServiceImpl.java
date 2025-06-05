@@ -6,12 +6,15 @@ import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.orderservice.entity.Order;
+import org.example.orderservice.entity.OrderItem;
 import org.example.orderservice.repository.OrderRepository;
 import org.example.orderservice.service.IOrderService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +52,9 @@ public class OrderServiceImpl implements IOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
     }
 
+
     @Override
+    @Transactional
     public void updateOrderStatus(
             UUID orderId, UUID customerId,
             UUID paymentId, UUID shippingId,
@@ -59,10 +64,12 @@ public class OrderServiceImpl implements IOrderService {
             ShippingStatus shippingStatus,
             LocalDateTime updatedAt,
             String customerName,
-            String customerEmail
+            String customerEmail,
+            List<OrderItem> items
     ) {
         Order existingOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
+
         existingOrder.setCustomerId(customerId);
         existingOrder.setPaymentId(paymentId);
         existingOrder.setShippingId(shippingId);
@@ -73,6 +80,20 @@ public class OrderServiceImpl implements IOrderService {
         existingOrder.setUpdatedAt(updatedAt);
         existingOrder.setCustomerName(customerName);
         existingOrder.setCustomerEmail(customerEmail);
+
+        if (existingOrder.getItems() == null) {
+            existingOrder.setItems(new ArrayList<>());
+        } else {
+            existingOrder.getItems().clear();
+        }
+
+        if (items != null) {
+            for (OrderItem newItem : items) {
+                newItem.setOrder(existingOrder);
+                existingOrder.getItems().add(newItem);
+            }
+        }
+
         orderRepository.save(existingOrder);
     }
 

@@ -37,4 +37,21 @@ public class OrderMapper {
         dto.setQuantity(item.getQuantity());
         return dto;
     }
+
+    public static OrderItem toEntity(OrderItemDto dto) {
+        return OrderItem.builder()
+                .productId(dto.getProductId())
+                .quantity(dto.getQuantity())
+                .price(dto.getPrice())
+                .build();
+    }
+
+    public static List<OrderItem> toEntityList(List<OrderItemDto> dtoList) {
+        if (dtoList == null) {
+            return new ArrayList<>();
+        }
+        return dtoList.stream()
+                .map(OrderMapper::toEntity)
+                .collect(Collectors.toList());
+    }
 }

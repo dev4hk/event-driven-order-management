@@ -6,9 +6,11 @@ import lombok.NoArgsConstructor;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.dto.OrderItemDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -26,4 +28,5 @@ public class OrderCompletedEvent {
     private String customerName;
     private String customerEmail;
     private LocalDateTime completedAt;
+    private List<OrderItemDto> items;
 }
