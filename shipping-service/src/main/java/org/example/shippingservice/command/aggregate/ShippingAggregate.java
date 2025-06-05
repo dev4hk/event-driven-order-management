@@ -7,10 +7,7 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.commands.CancelShippingCommand;
 import org.example.common.constants.ShippingStatus;
-import org.example.common.events.ShippingCancelledEvent;
-import org.example.common.events.ShippingCreatedEvent;
-import org.example.common.events.ShippingDeliveredEvent;
-import org.example.common.events.ShippingProcessedEvent;
+import org.example.common.events.*;
 import org.example.common.commands.CreateShippingCommand;
 import org.example.shippingservice.command.DeliverShippingCommand;
 import org.example.shippingservice.command.ProcessShippingCommand;
@@ -72,7 +69,11 @@ public class ShippingAggregate {
         BeanUtils.copyProperties(command, event);
         event.setUpdatedAt(LocalDateTime.now());
         event.setStatus(ShippingStatus.SHIPPED);
-        apply(event);
+        apply(event).andThen(() -> {
+            ShippingDataUpdatedEvent shippingDataUpdatedEvent = new ShippingDataUpdatedEvent();
+            BeanUtils.copyProperties(event, shippingDataUpdatedEvent);
+            apply(shippingDataUpdatedEvent);
+        });
     }
 
     @EventSourcingHandler
@@ -94,7 +95,7 @@ public class ShippingAggregate {
 
     @EventSourcingHandler
     public void on(ShippingDeliveredEvent event) {
-        this.status = event.getNewStatus();
+        this.status = event.getStatus();
     }
 
     @CommandHandler

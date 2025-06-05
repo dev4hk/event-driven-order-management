@@ -12,8 +12,6 @@ import org.example.shippingservice.service.IShippingService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-
 @Component
 @RequiredArgsConstructor
 @ProcessingGroup("shipping-group")
@@ -35,7 +33,7 @@ public class ShippingProjection {
 
     @EventHandler
     public void on(ShippingDeliveredEvent event) {
-        shippingService.updateShippingStatus(event.getShippingId(), event.getNewStatus(), event.getUpdatedAt());
+        shippingService.updateShippingStatus(event.getShippingId(), event.getStatus(), event.getUpdatedAt());
     }
 
     @EventHandler

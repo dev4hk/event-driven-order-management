@@ -127,4 +127,13 @@ public class OrderServiceImpl implements IOrderService {
         existingOrder.setUpdatedAt(cancelledAt);
         orderRepository.save(existingOrder);
     }
+
+    @Override
+    public void updateShippingStatus(UUID shippingId, ShippingStatus status, LocalDateTime updatedAt) {
+        Order existingOrder = orderRepository.findByShippingId(shippingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with ID: " + shippingId));
+        existingOrder.setShippingStatus(status);
+        existingOrder.setUpdatedAt(updatedAt);
+        orderRepository.save(existingOrder);
+    }
 }

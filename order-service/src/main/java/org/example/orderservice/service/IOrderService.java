@@ -41,4 +41,6 @@ public interface IOrderService {
             String reason,
             LocalDateTime cancelledAt
     );
+
+    void updateShippingStatus(UUID shippingId, ShippingStatus status, LocalDateTime updatedAt);
 }
