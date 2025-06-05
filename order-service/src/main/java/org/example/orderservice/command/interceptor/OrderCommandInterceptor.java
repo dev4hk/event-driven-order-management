@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.constants.OrderStatus;
+import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
@@ -37,9 +38,9 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
                 validateCreateOrder((CreateOrderCommand) command.getPayload());
             } else if (payloadType.equals(CancelOrderCommand.class)) {
                 validateCancelOrder((CancelOrderCommand) command.getPayload());
-            } else if(payloadType.equals(CompleteOrderCommand.class)) {
+            } else if (payloadType.equals(CompleteOrderCommand.class)) {
                 validateCompleteOrder((CompleteOrderCommand) command.getPayload());
-            } else if(payloadType.equals(RequestOrderCancellationCommand.class)) {
+            } else if (payloadType.equals(RequestOrderCancellationCommand.class)) {
                 validateRequestOrderCancellation((RequestOrderCancellationCommand) command.getPayload());
             }
             return command;
@@ -81,7 +82,13 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
             throw new OrderLifecycleViolationException("Order is already cancelled.");
         }
 
-        if (existingOrder.getStatus() == OrderStatus.COMPLETED) {
+        if (
+                existingOrder.getStatus() == OrderStatus.COMPLETED
+                        && (
+                        existingOrder.getShippingStatus() == ShippingStatus.SHIPPED
+                                || existingOrder.getShippingStatus() == ShippingStatus.DELIVERED
+                )
+        ) {
             throw new OrderLifecycleViolationException("Cannot cancel a completed order.");
         }
     }
