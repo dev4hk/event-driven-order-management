@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.dto.OrderItemDto;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.entity.OrderItem;
@@ -67,8 +68,7 @@ public class OrderServiceImpl implements IOrderService {
             String customerEmail,
             List<OrderItem> items
     ) {
-        Order existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
+        Order existingOrder = getOrderById(orderId);
 
         existingOrder.setCustomerId(customerId);
         existingOrder.setPaymentId(paymentId);
@@ -101,6 +101,28 @@ public class OrderServiceImpl implements IOrderService {
     public void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt) {
         Order existingOrder = getOrderById(orderId);
         existingOrder.setStatus(status);
+        existingOrder.setReason(reason);
+        existingOrder.setUpdatedAt(cancelledAt);
+        orderRepository.save(existingOrder);
+    }
+
+    @Override
+    public void updateOrderStatus(
+            UUID orderId,
+            PaymentStatus paymentStatus,
+            ShippingStatus shippingStatus,
+            List<OrderItemDto> items,
+            String reason,
+            LocalDateTime cancelledAt
+    ) {
+        Order existingOrder = getOrderById(orderId);
+        if (existingOrder.getItems() == null) {
+            existingOrder.setItems(new ArrayList<>());
+        } else {
+            existingOrder.getItems().clear();
+        }
+        existingOrder.setPaymentStatus(paymentStatus);
+        existingOrder.setShippingStatus(shippingStatus);
         existingOrder.setReason(reason);
         existingOrder.setUpdatedAt(cancelledAt);
         orderRepository.save(existingOrder);

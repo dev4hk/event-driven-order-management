@@ -10,16 +10,17 @@ import org.example.common.commands.CancelPaymentCommand;
 import org.example.common.commands.CancelShippingCommand;
 import org.example.common.commands.ReleaseProductReservationCommand;
 import org.example.common.commands.ValidateCustomerCommand;
+import org.example.common.constants.PaymentStatus;
+import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
+import org.example.orderservice.command.CompleteOrderCancellationCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Saga
 @Slf4j
@@ -35,8 +36,11 @@ public class CancelOrderSaga {
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
     private String reason;
+    private PaymentStatus paymentStatus;
+    private ShippingStatus shippingStatus;
 
     private Set<UUID> releasedProducts = new HashSet<>();
+    private LocalDateTime cancelledAt;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -96,11 +100,13 @@ public class CancelOrderSaga {
 
         if (releasedProducts.size() == items.size()) {
             log.info("[Saga] All product reservations released for orderId {}", orderId);
+            this.items = new ArrayList<>();
             CancelPaymentCommand cancelPaymentCommand = CancelPaymentCommand.builder()
                     .paymentId(paymentId)
                     .customerId(customerId)
                     .orderId(orderId)
                     .amount(totalAmount)
+                    .reason(reason)
                     .build();
             commandGateway.send(cancelPaymentCommand);
         }
@@ -109,6 +115,7 @@ public class CancelOrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(PaymentCancelledEvent event) {
         log.info("[Saga] Received PaymentCancelledEvent for paymentId {}", event.getPaymentId());
+        this.paymentStatus = PaymentStatus.CANCELLED;
         CancelShippingCommand cancelShippingCommand = CancelShippingCommand.builder()
                 .shippingId(shippingId)
                 .orderId(orderId)
@@ -117,9 +124,26 @@ public class CancelOrderSaga {
         commandGateway.send(cancelShippingCommand);
     }
 
-    @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(ShippingCancelledEvent event) {
         log.info("[Saga] Received ShippingCancelledEvent for shippingId {}", event.getShippingId());
+        this.shippingStatus = ShippingStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
+        CompleteOrderCancellationCommand completeOrderCancelledEvent = CompleteOrderCancellationCommand.builder()
+                .orderId(orderId)
+                .paymentStatus(paymentStatus)
+                .shippingStatus(shippingStatus)
+                .items(items)
+                .reason(reason)
+                .cancelledAt(cancelledAt)
+                .build();
+        commandGateway.send(completeOrderCancelledEvent);
+
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(OrderCancellationCompletedEvent event) {
+        log.info("[Saga] Received OrderCancellationCompletedEvent for orderId {}", event.getOrderId());
     }
 }

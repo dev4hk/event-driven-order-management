@@ -10,14 +10,8 @@ import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
-import org.example.common.events.OrderCancellationRequestedEvent;
-import org.example.common.events.OrderCancelledEvent;
-import org.example.common.events.OrderCompletedEvent;
-import org.example.common.events.OrderCreatedEvent;
-import org.example.orderservice.command.CancelOrderCommand;
-import org.example.orderservice.command.CompleteOrderCommand;
-import org.example.orderservice.command.CreateOrderCommand;
-import org.example.orderservice.command.RequestOrderCancellationCommand;
+import org.example.common.events.*;
+import org.example.orderservice.command.*;
 import org.example.orderservice.exception.InvalidOrderDataException;
 import org.example.orderservice.exception.OrderLifecycleViolationException;
 import org.springframework.beans.BeanUtils;
@@ -125,6 +119,13 @@ public class OrderCommandAggregate {
     public void on(OrderCancellationRequestedEvent event) {
         this.reason = event.getReason();
         this.updatedAt = event.getCancelledAt();
+    }
+
+    @CommandHandler
+    public void handle(CompleteOrderCancellationCommand command) {
+        OrderCancellationCompletedEvent event = new OrderCancellationCompletedEvent();
+        BeanUtils.copyProperties(command, event);
+        AggregateLifecycle.apply(event);
     }
 
 }

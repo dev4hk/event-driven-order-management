@@ -3,6 +3,7 @@ package org.example.orderservice.query.projection;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
+import org.example.common.events.OrderCancellationCompletedEvent;
 import org.example.common.events.OrderCancelledEvent;
 import org.example.common.events.OrderCompletedEvent;
 import org.example.common.events.OrderCreatedEvent;
@@ -50,6 +51,19 @@ public class OrderProjection {
                 event.getCustomerName(),
                 event.getCustomerEmail(),
                 items
+        );
+    }
+
+    @EventHandler
+    public void on(OrderCancellationCompletedEvent event) {
+        List<OrderItem> items = OrderMapper.toEntityList(event.getItems());
+        iOrderService.updateOrderStatus(
+                event.getOrderId(),
+                event.getPaymentStatus(),
+                event.getShippingStatus(),
+                event.getItems(),
+                event.getReason(),
+                event.getCancelledAt()
         );
     }
 

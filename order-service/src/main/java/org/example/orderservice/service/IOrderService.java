@@ -3,6 +3,7 @@ package org.example.orderservice.service;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.dto.OrderItemDto;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.entity.OrderItem;
 
@@ -31,4 +32,13 @@ public interface IOrderService {
             List<OrderItem> items
     );
     void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt);
+
+    void updateOrderStatus(
+            UUID orderId,
+            PaymentStatus paymentStatus,
+            ShippingStatus shippingStatus,
+            List<OrderItemDto> items,
+            String reason,
+            LocalDateTime cancelledAt
+    );
 }
