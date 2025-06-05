@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.example.common.constants.PaymentStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -19,5 +20,6 @@ public class PaymentProcessedEvent {
     private UUID customerId;
     private BigDecimal amount;
     private PaymentStatus status;
+    private LocalDateTime updatedAt;
 }
 

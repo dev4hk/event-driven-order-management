@@ -52,6 +52,7 @@ public class PaymentCommandAggregate {
                     .customerId(command.getCustomerId())
                     .amount(command.getAmount())
                     .status(PaymentStatus.COMPLETED)
+                    .updatedAt(LocalDateTime.now())
                     .build();
             AggregateLifecycle.apply(event);
         }
@@ -65,6 +66,7 @@ public class PaymentCommandAggregate {
         this.customerId = event.getCustomerId();
         this.amount = event.getAmount();
         this.status = event.getStatus();
+        this.updatedAt = event.getUpdatedAt();
     }
 
     @EventSourcingHandler

@@ -24,7 +24,7 @@ public class PaymentProjection {
     public void on(PaymentProcessedEvent event) {
         Payment payment = new Payment();
         BeanUtils.copyProperties(event, payment);
-        payment.setCreatedAt(LocalDateTime.now());
+        payment.setUpdatedAt(LocalDateTime.now());
         paymentService.createPayment(payment);
     }
 
@@ -32,7 +32,7 @@ public class PaymentProjection {
     public void on(PaymentFailedEvent event) {
         Payment payment = new Payment();
         BeanUtils.copyProperties(event, payment);
-        payment.setCreatedAt(LocalDateTime.now());
+        payment.setUpdatedAt(LocalDateTime.now());
         paymentService.createPayment(payment);
     }
 
