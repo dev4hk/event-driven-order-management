@@ -12,6 +12,7 @@ import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeactivateCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
 import org.example.customerservice.command.events.CustomerCreditApprovedEvent;
+import org.example.customerservice.exception.InvalidCustomerStateException;
 import org.springframework.beans.BeanUtils;
 
 import java.util.UUID;
@@ -77,19 +78,9 @@ public class CustomerAggregate {
     @CommandHandler
     public void handle(ValidateCustomerCommand command) {
         if(!this.active) {
-            CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
-                    .customerId(command.getCustomerId())
-                    .orderId(command.getOrderId())
-                    .message("Customer is not active")
-                    .build();
-            apply(customerValidationFailedEvent);
+            throw new InvalidCustomerStateException("Customer is not active");
         } else if(!this.creditApproved) {
-            CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
-                    .customerId(command.getCustomerId())
-                    .orderId(command.getOrderId())
-                    .message("Customer credit is not approved")
-                    .build();
-            apply(customerValidationFailedEvent);
+            throw new InvalidCustomerStateException("Customer credit is not approved");
         } else {
             CustomerValidatedEvent customerValidatedEvent = CustomerValidatedEvent.builder()
                     .customerId(command.getCustomerId())

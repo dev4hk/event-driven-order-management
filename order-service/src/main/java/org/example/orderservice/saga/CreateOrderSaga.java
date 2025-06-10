@@ -89,13 +89,6 @@ public class CreateOrderSaga {
                 }
             }
         });
-
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    public void on(CustomerValidationFailedEvent event) {
-        log.warn("[Saga] Customer {} validation failed: {}", event.getCustomerId(), event.getMessage());
-        cancelOrder("Customer validation failed: " + event.getMessage());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
