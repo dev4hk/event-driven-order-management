@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ShippingRepository extends JpaRepository<Shipping, UUID> {
-    List<Shipping> findByStatus(ShippingStatus status);
+    List<Shipping> findByShippingStatus(ShippingStatus status);
     Optional<Shipping> findByOrderId(UUID orderId);
     boolean existsByOrderId(UUID orderId);
 }

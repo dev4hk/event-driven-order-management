@@ -50,7 +50,7 @@ public class ShippingServiceImpl implements IShippingService {
     public void updateShippingStatus(UUID shippingId, ShippingStatus newStatus, LocalDateTime updatedAt) {
         Shipping existingShipping = shippingRepository.findById(shippingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with ID: " + shippingId));
-        existingShipping.setStatus(newStatus);
+        existingShipping.setShippingStatus(newStatus);
         existingShipping.setUpdatedAt(updatedAt);
 
         shippingRepository.save(existingShipping);
@@ -59,7 +59,7 @@ public class ShippingServiceImpl implements IShippingService {
     @Override
     public void cancelShipping(UUID shippingId, String reason, ShippingStatus status, LocalDateTime cancelledAt) {
         Shipping existingShipping = getById(shippingId);
-        existingShipping.setStatus(status);
+        existingShipping.setShippingStatus(status);
         existingShipping.setUpdatedAt(cancelledAt);
         existingShipping.setMessage(reason);
         shippingRepository.save(existingShipping);

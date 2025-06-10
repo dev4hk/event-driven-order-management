@@ -60,7 +60,7 @@ public class CreateOrderSaga {
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderInitiatedEvent event) {
-        log.info("[Saga] Received OrderCreatedEvent for order {}", event.getOrderId());
+        log.info("[Saga] Received OrderInitiatedEvent for order {}", event.getOrderId());
 
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
@@ -71,7 +71,7 @@ public class CreateOrderSaga {
         this.city = event.getCity();
         this.state = event.getState();
         this.zipCode = event.getZipCode();
-        this.orderStatus = event.getStatus();
+        this.orderStatus = event.getOrderStatus();
 
         ValidateCustomerCommand command = ValidateCustomerCommand.builder()
                 .customerId(customerId)

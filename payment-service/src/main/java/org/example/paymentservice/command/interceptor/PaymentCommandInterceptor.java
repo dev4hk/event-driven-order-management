@@ -74,7 +74,7 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
         Payment payment = paymentRepository.findById(command.getPaymentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Payment with this ID does not exist: " + command.getPaymentId()));
 
-        if(payment.getStatus().equals(PaymentStatus.COMPLETED) || payment.getStatus().equals(PaymentStatus.CANCELLED)) {
+        if(payment.getPaymentStatus().equals(PaymentStatus.COMPLETED) || payment.getPaymentStatus().equals(PaymentStatus.CANCELLED)) {
             throw new InvalidPaymentStateException("Payment with ID " + command.getPaymentId() + " is already completed or cancelled.");
         }
         if (command.getTotalAmount().compareTo(payment.getTotalAmount()) != 0) {

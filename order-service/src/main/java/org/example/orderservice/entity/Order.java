@@ -35,7 +35,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private OrderStatus status;
+    private OrderStatus orderStatus;
 
     @Column(length = 255)
     private String message;

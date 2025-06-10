@@ -77,11 +77,11 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
 
         Order existingOrder = getExistingOrder(command.getOrderId());
 
-        if (existingOrder.getStatus() == OrderStatus.CANCELLED) {
+        if (existingOrder.getOrderStatus() == OrderStatus.CANCELLED) {
             throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already cancelled.");
         }
 
-        if (existingOrder.getStatus() == OrderStatus.COMPLETED) {
+        if (existingOrder.getOrderStatus() == OrderStatus.COMPLETED) {
             ShippingStatus shippingStatus = existingOrder.getShippingStatus();
             if (shippingStatus.equals(ShippingStatus.SHIPPED) || shippingStatus.equals(ShippingStatus.DELIVERED) || shippingStatus.equals(ShippingStatus.CANCELLED)) {
                 throw new OrderLifecycleViolationException("Cannot cancel a completed or delivered or cancelled order with ID: " + command.getOrderId());
@@ -103,7 +103,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
 
         Order existingOrder = getExistingOrder(command.getOrderId());
 
-        if (existingOrder.getStatus().equals(OrderStatus.COMPLETED) || existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+        if (existingOrder.getOrderStatus().equals(OrderStatus.COMPLETED) || existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
             throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
         }
 
@@ -115,7 +115,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         }
         Order existingOrder = getExistingOrder(command.getOrderId());
 
-        if (existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+        if (existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
             throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already cancelled.");
         }
 
@@ -134,7 +134,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
 
         Order existingOrder = getExistingOrder(command.getOrderId());
 
-        if (existingOrder.getStatus().equals(OrderStatus.COMPLETED) || existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+        if (existingOrder.getOrderStatus().equals(OrderStatus.COMPLETED) || existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
             throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
         }
     }

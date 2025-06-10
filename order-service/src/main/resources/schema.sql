@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS orders;
 CREATE TABLE orders
 (
     order_id        UUID PRIMARY KEY,
-    status          VARCHAR(20)    NOT NULL,
+    order_status    VARCHAR(20)    NOT NULL,
     message         VARCHAR(255),
     updated_at      TIMESTAMP,
     customer_id     UUID           NOT NULL,

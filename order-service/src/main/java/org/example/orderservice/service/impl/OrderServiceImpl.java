@@ -74,7 +74,7 @@ public class OrderServiceImpl implements IOrderService {
         existingOrder.setPaymentId(paymentId);
         existingOrder.setShippingId(shippingId);
         existingOrder.setTotalAmount(totalAmount);
-        existingOrder.setStatus(orderStatus);
+        existingOrder.setOrderStatus(orderStatus);
         existingOrder.setPaymentStatus(paymentStatus);
         existingOrder.setShippingStatus(shippingStatus);
         existingOrder.setUpdatedAt(updatedAt);
@@ -103,7 +103,7 @@ public class OrderServiceImpl implements IOrderService {
             throw new ResourceNotFoundException("Order ID must not be null.");
         }
         Order existingOrder = getOrderById(orderId);
-        existingOrder.setStatus(status);
+        existingOrder.setOrderStatus(status);
         existingOrder.setPaymentStatus(paymentStatus);
         existingOrder.setShippingStatus(shippingStatus);
         existingOrder.setUpdatedAt(updatedAt);
@@ -113,7 +113,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt) {
         Order existingOrder = getOrderById(orderId);
-        existingOrder.setStatus(status);
+        existingOrder.setOrderStatus(status);
         existingOrder.setMessage(reason);
         existingOrder.setUpdatedAt(cancelledAt);
         orderRepository.save(existingOrder);

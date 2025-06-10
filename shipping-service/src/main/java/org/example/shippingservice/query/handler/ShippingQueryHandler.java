@@ -42,7 +42,7 @@ public class ShippingQueryHandler {
         return ShippingResponseDto.builder()
                 .shippingId(shipping.getShippingId())
                 .orderId(shipping.getOrderId())
-                .status(shipping.getStatus())
+                .status(shipping.getShippingStatus())
                 .updatedAt(shipping.getUpdatedAt())
                 .build();
     }

@@ -44,7 +44,7 @@ public class PaymentServiceImpl implements IPaymentService {
     @Override
     public void cancelPayment(UUID paymentId, PaymentStatus status, String reason, LocalDateTime cancelledAt) {
         Payment payment = getPaymentById(paymentId);
-        payment.setStatus(status);
+        payment.setPaymentStatus(status);
         payment.setMessage(reason);
         payment.setUpdatedAt(cancelledAt);
         paymentRepository.save(payment);
@@ -53,7 +53,7 @@ public class PaymentServiceImpl implements IPaymentService {
     @Override
     public void updateStatus(UUID paymentId, PaymentStatus status, String reason, LocalDateTime updatedAt) {
         Payment payment = getPaymentById(paymentId);
-        payment.setStatus(status);
+        payment.setPaymentStatus(status);
         payment.setMessage(reason);
         payment.setUpdatedAt(updatedAt);
         paymentRepository.save(payment);
@@ -69,7 +69,7 @@ public class PaymentServiceImpl implements IPaymentService {
             throw new InvalidPaymentDataException("Customer ID mismatch");
         }
         payment.setTotalAmount(totalAmount);
-        payment.setStatus(status);
+        payment.setPaymentStatus(status);
         payment.setMessage(message);
         payment.setUpdatedAt(updatedAt);
         paymentRepository.save(payment);

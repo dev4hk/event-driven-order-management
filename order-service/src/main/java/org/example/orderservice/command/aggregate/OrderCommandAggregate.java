@@ -44,7 +44,7 @@ public class OrderCommandAggregate {
     public OrderCommandAggregate(InitiateOrderCommand command) {
         OrderInitiatedEvent event = new OrderInitiatedEvent();
         BeanUtils.copyProperties(command, event);
-        event.setStatus(OrderStatus.CREATED);
+        event.setOrderStatus(OrderStatus.INITIATED);
         event.setCreatedAt(LocalDateTime.now());
         AggregateLifecycle.apply(event);
     }
@@ -55,7 +55,7 @@ public class OrderCommandAggregate {
         this.customerId = event.getCustomerId();
         this.items = event.getItems();
         this.totalAmount = event.getTotalAmount();
-        this.orderStatus = event.getStatus();
+        this.orderStatus = event.getOrderStatus();
         this.updatedAt = event.getCreatedAt();
     }
 

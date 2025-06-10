@@ -23,6 +23,6 @@ public class OrderInitiatedEvent {
     private String city;
     private String state;
     private String zipCode;
-    private OrderStatus status;
+    private OrderStatus orderStatus;
     private LocalDateTime createdAt;
 }

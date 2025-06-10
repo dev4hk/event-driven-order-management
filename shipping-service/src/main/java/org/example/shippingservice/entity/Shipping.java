@@ -47,7 +47,7 @@ public class Shipping {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ShippingStatus status;
+    private ShippingStatus shippingStatus;
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;

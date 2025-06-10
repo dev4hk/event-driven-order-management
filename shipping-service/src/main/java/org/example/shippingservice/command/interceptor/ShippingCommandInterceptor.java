@@ -74,7 +74,7 @@ public class ShippingCommandInterceptor implements MessageDispatchInterceptor<Co
 
         Shipping existingShipping = getExistingShipping(command.getShippingId());
 
-        if (existingShipping.getStatus() == ShippingStatus.DELIVERED || existingShipping.getStatus() == ShippingStatus.CANCELLED) {
+        if (existingShipping.getShippingStatus() == ShippingStatus.DELIVERED || existingShipping.getShippingStatus() == ShippingStatus.CANCELLED) {
             throw new InvalidShippingStateException("Cannot process a delivered or cancelled shipping with ID: " + command.getShippingId());
         }
     }
@@ -86,8 +86,8 @@ public class ShippingCommandInterceptor implements MessageDispatchInterceptor<Co
 
         Shipping existingShipping = getExistingShipping(command.getShippingId());
 
-        if (existingShipping.getStatus() != ShippingStatus.SHIPPED) {
-            throw new InvalidShippingStateException("Cannot deliver a shipping with ID " + command.getShippingId() + " that is not in SHIPPED status. Current status: " + existingShipping.getStatus());
+        if (existingShipping.getShippingStatus() != ShippingStatus.SHIPPED) {
+            throw new InvalidShippingStateException("Cannot deliver a shipping with ID " + command.getShippingId() + " that is not in SHIPPED status. Current status: " + existingShipping.getShippingStatus());
         }
     }
 }
