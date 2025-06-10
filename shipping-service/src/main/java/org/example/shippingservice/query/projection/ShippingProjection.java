@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.ShippingCancelledEvent;
-import org.example.common.events.ShippingCreatedEvent;
+import org.example.common.events.ShippingInitiatedEvent;
 import org.example.common.events.ShippingDeliveredEvent;
 import org.example.common.events.ShippingProcessedEvent;
 import org.example.shippingservice.entity.Shipping;
@@ -20,7 +20,7 @@ public class ShippingProjection {
     private final IShippingService shippingService;
 
     @EventHandler
-    public void on(ShippingCreatedEvent event) {
+    public void on(ShippingInitiatedEvent event) {
         Shipping shipping = new Shipping();
         BeanUtils.copyProperties(event, shipping);
         shippingService.createShipping(shipping);
@@ -38,7 +38,7 @@ public class ShippingProjection {
 
     @EventHandler
     public void on(ShippingCancelledEvent event) {
-        shippingService.cancelShipping(event.getShippingId(), event.getReason(), event.getStatus(), event.getCancelledAt());
+        shippingService.cancelShipping(event.getShippingId(), event.getMessage(), event.getStatus(), event.getCancelledAt());
     }
 
 

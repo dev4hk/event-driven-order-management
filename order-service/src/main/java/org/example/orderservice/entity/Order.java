@@ -38,7 +38,7 @@ public class Order {
     private OrderStatus status;
 
     @Column(length = 255)
-    private String reason;
+    private String message;
 
     private LocalDateTime updatedAt;
 

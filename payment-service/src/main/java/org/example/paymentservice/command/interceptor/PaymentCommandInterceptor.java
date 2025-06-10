@@ -6,10 +6,12 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.commands.CancelPaymentCommand;
 import org.example.common.commands.InitiatePaymentCommand;
 import org.example.common.commands.ProcessPaymentCommand;
+import org.example.common.constants.PaymentStatus;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException; // Corrected import
 import org.example.paymentservice.entity.Payment;
 import org.example.paymentservice.exception.InvalidPaymentDataException;
+import org.example.paymentservice.exception.InvalidPaymentStateException;
 import org.example.paymentservice.repository.PaymentRepository;
 import org.springframework.stereotype.Component;
 
@@ -50,20 +52,32 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
     }
 
     private void validateInitiatePaymentCommand(InitiatePaymentCommand command) {
-        validateCorePaymentData(command.getPaymentId(), command.getOrderId(), command.getCustomerId(), command.getAmount());
-
+        validateCorePaymentData(command.getPaymentId(), command.getOrderId(), command.getCustomerId(), command.getTotalAmount());
+        if(
+                command.getCustomerName() == null
+                || command.getCustomerEmail() == null
+                || command.getAddress() == null
+                || command.getCity() == null
+                || command.getState() == null
+                || command.getZipCode() == null
+        ) {
+            throw new InvalidPaymentDataException("Customer name, email, address, city, state, and zip code must not be null.");
+        }
         if (paymentRepository.existsById(command.getPaymentId())) {
             throw new ResourceAlreadyExistsException("Payment with this ID already exists: " + command.getPaymentId());
         }
     }
 
     private void validateProcessPaymentCommand(ProcessPaymentCommand command) {
-        validateCorePaymentData(command.getPaymentId(), command.getOrderId(), command.getCustomerId(), command.getAmount());
+        validateCorePaymentData(command.getPaymentId(), command.getOrderId(), command.getCustomerId(), command.getTotalAmount());
 
         Payment payment = paymentRepository.findById(command.getPaymentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Payment with this ID does not exist: " + command.getPaymentId()));
 
-        if (command.getAmount().compareTo(payment.getAmount()) != 0) {
+        if(payment.getStatus().equals(PaymentStatus.COMPLETED) || payment.getStatus().equals(PaymentStatus.CANCELLED)) {
+            throw new InvalidPaymentStateException("Payment with ID " + command.getPaymentId() + " is already completed or cancelled.");
+        }
+        if (command.getTotalAmount().compareTo(payment.getTotalAmount()) != 0) {
             throw new InvalidPaymentDataException("Amount in command must be equal to the original payment amount.");
         }
     }

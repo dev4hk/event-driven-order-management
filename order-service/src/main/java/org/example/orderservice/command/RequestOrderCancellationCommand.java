@@ -23,5 +23,5 @@ public class RequestOrderCancellationCommand {
     private UUID shippingId;
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
-    private String reason;
+    private String message;
 }

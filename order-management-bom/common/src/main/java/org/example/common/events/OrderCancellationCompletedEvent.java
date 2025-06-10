@@ -25,7 +25,7 @@ public class OrderCancellationCompletedEvent {
 
     private List<OrderItemDto> items;
 
-    private String reason;
+    private String message;
 
     private LocalDateTime cancelledAt;
 }

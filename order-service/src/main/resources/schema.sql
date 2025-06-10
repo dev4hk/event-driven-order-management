@@ -5,7 +5,7 @@ CREATE TABLE orders
 (
     order_id        UUID PRIMARY KEY,
     status          VARCHAR(20)    NOT NULL,
-    reason          VARCHAR(255),
+    message         VARCHAR(255),
     updated_at      TIMESTAMP,
     customer_id     UUID           NOT NULL,
     customer_name   VARCHAR(100),

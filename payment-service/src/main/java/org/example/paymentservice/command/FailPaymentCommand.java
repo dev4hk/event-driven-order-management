@@ -1,20 +1,25 @@
-package org.example.orderservice.command;
+package org.example.paymentservice.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
+import org.example.common.constants.PaymentStatus;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CancelOrderCommand {
+public class FailPaymentCommand {
+
     @TargetAggregateIdentifier
+    private UUID paymentId;
     private UUID orderId;
-    private UUID customerId;
+    private BigDecimal amount;
+    private PaymentStatus status;
     private String message;
 }

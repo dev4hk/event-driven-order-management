@@ -15,6 +15,6 @@ public class CustomerValidationFailedEvent {
 
     private UUID customerId;
     private UUID orderId;
-    private String reason;
+    private String message;
 
 }

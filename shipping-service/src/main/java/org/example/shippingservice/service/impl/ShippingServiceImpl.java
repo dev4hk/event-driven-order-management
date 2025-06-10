@@ -61,7 +61,7 @@ public class ShippingServiceImpl implements IShippingService {
         Shipping existingShipping = getById(shippingId);
         existingShipping.setStatus(status);
         existingShipping.setUpdatedAt(cancelledAt);
-        existingShipping.setReason(reason);
+        existingShipping.setMessage(reason);
         shippingRepository.save(existingShipping);
     }
 }

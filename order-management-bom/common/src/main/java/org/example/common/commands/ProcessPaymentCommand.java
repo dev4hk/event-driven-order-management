@@ -13,11 +13,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePaymentCommand {
+public class ProcessPaymentCommand {
     @TargetAggregateIdentifier
     private UUID paymentId;
     private UUID orderId;
     private UUID customerId;
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
 }
 

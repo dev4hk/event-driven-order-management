@@ -35,7 +35,7 @@ public class CancelOrderSaga {
     private UUID shippingId;
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
-    private String reason;
+    private String message;
     private PaymentStatus paymentStatus;
     private ShippingStatus shippingStatus;
 
@@ -52,7 +52,7 @@ public class CancelOrderSaga {
         this.shippingId = event.getShippingId();
         this.items = event.getItems();
         this.totalAmount = event.getTotalAmount();
-        this.reason = event.getReason();
+        this.message = event.getMessage();
 
         ValidateCustomerCommand validateCustomerCommand = ValidateCustomerCommand.builder()
                 .customerId(event.getCustomerId())
@@ -67,7 +67,7 @@ public class CancelOrderSaga {
         CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
                 .orderId(orderId)
                 .customerId(customerId)
-                .reason(reason)
+                .message(message)
                 .build();
         commandGateway.send(cancelOrderCommand);
     }
@@ -106,7 +106,7 @@ public class CancelOrderSaga {
                     .customerId(customerId)
                     .orderId(orderId)
                     .amount(totalAmount)
-                    .reason(reason)
+                    .message(message)
                     .build();
             commandGateway.send(cancelPaymentCommand);
         }
@@ -119,7 +119,7 @@ public class CancelOrderSaga {
         CancelShippingCommand cancelShippingCommand = CancelShippingCommand.builder()
                 .shippingId(shippingId)
                 .orderId(orderId)
-                .reason(reason)
+                .message(message)
                 .build();
         commandGateway.send(cancelShippingCommand);
     }
@@ -134,7 +134,7 @@ public class CancelOrderSaga {
                 .paymentStatus(paymentStatus)
                 .shippingStatus(shippingStatus)
                 .items(items)
-                .reason(reason)
+                .message(message)
                 .cancelledAt(cancelledAt)
                 .build();
         commandGateway.send(completeOrderCancelledEvent);

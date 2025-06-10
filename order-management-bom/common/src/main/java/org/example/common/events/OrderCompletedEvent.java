@@ -18,15 +18,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderCompletedEvent {
     private UUID orderId;
-    private UUID customerId;
-    private UUID paymentId;
-    private UUID shippingId;
     private OrderStatus orderStatus;
     private PaymentStatus paymentStatus;
     private ShippingStatus shippingStatus;
-    private BigDecimal totalAmount;
-    private String customerName;
-    private String customerEmail;
     private LocalDateTime completedAt;
-    private List<OrderItemDto> items;
 }

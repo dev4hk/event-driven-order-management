@@ -21,25 +21,37 @@ public class Shipping {
     @Id
     private UUID shippingId;
 
+    @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
+    @Column(name = "customer_id", nullable = false)
     private UUID customerId;
 
+    @Column(nullable = false)
     private String address;
 
+    @Column(nullable = false)
     private String city;
 
+    @Column(nullable = false)
     private String state;
 
+    @Column(nullable = false)
     private String zipCode;
 
+    @Column(nullable = false)
     private String customerName;
 
+    @Column(nullable = false)
+    private String customerEmail;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ShippingStatus status;
 
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    private String reason;
+    private String message;
 }
 

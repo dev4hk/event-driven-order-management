@@ -17,6 +17,7 @@ import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.CompleteOrderCommand;
+import org.example.orderservice.command.UpdateShippingStatusCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
@@ -36,7 +37,7 @@ public class CreateOrderSaga {
     private UUID paymentId;
     private UUID shippingId;
     private boolean isOrderCancelled = false;
-    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private List<OrderItemDto> items;
     private Map<UUID, Integer> reservedProducts = new HashMap<>();
@@ -52,28 +53,25 @@ public class CreateOrderSaga {
     private String customerName;
     private String customerEmail;
 
+    private OrderStatus orderStatus;
     private PaymentStatus paymentStatus;
     private ShippingStatus shippingStatus;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
-    public void on(OrderCreatedEvent event) {
+    public void on(OrderInitiatedEvent event) {
         log.info("[Saga] Received OrderCreatedEvent for order {}", event.getOrderId());
 
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
         this.items = event.getItems();
-        this.createdAt = event.getCreatedAt();
+        this.updatedAt = event.getCreatedAt();
         this.totalAmount = event.getTotalAmount();
         this.address = event.getAddress();
         this.city = event.getCity();
         this.state = event.getState();
         this.zipCode = event.getZipCode();
-
-        if (items.isEmpty()) {
-            cancelOrder("No products in order");
-            return;
-        }
+        this.orderStatus = event.getStatus();
 
         ValidateCustomerCommand command = ValidateCustomerCommand.builder()
                 .customerId(customerId)
@@ -96,8 +94,8 @@ public class CreateOrderSaga {
 
     @SagaEventHandler(associationProperty = "orderId")
     public void on(CustomerValidationFailedEvent event) {
-        log.warn("[Saga] Customer {} validation failed: {}", event.getCustomerId(), event.getReason());
-        cancelOrder("Customer validation failed: " + event.getReason());
+        log.warn("[Saga] Customer {} validation failed: {}", event.getCustomerId(), event.getMessage());
+        cancelOrder("Customer validation failed: " + event.getMessage());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -145,15 +143,13 @@ public class CreateOrderSaga {
             cancelOrder("One or more products failed to reserve");
         } else {
             log.info("[Saga] All products reserved. Triggering payment...");
-            this.paymentId = UUID.randomUUID();
-
-            CreatePaymentCommand createPaymentCommand = CreatePaymentCommand.builder()
-                    .paymentId(this.paymentId)
+            InitiatePaymentCommand initiatePaymentCommand = InitiatePaymentCommand.builder()
+                    .paymentId(UUID.randomUUID())
                     .orderId(this.orderId)
                     .customerId(this.customerId)
-                    .amount(calculateTotalAmount())
+                    .totalAmount(calculateTotalAmount())
                     .build();
-            commandGateway.send(createPaymentCommand);
+            commandGateway.send(initiatePaymentCommand);
         }
     }
 
@@ -174,18 +170,38 @@ public class CreateOrderSaga {
     }
 
     @SagaEventHandler(associationProperty = "orderId")
+    public void on(PaymentInitiatedEvent event) {
+        log.info("[Saga] Received PaymentInitiatedEvent for paymentId {}", event.getPaymentId());
+        this.paymentId = event.getPaymentId();
+        this.paymentStatus = event.getStatus();
+        this.updatedAt = event.getUpdatedAt();
+
+        UpdatePaymentStatusCommand updatePaymentStatusCommand = UpdatePaymentStatusCommand.builder()
+                .orderId(orderId)
+                .paymentId(paymentId)
+                .paymentStatus(paymentStatus)
+                .message("Payment initiated")
+                .updatedAt(updatedAt)
+                .customerName(customerName)
+                .customerEmail(customerEmail)
+                .build();
+        commandGateway.send(updatePaymentStatusCommand);
+
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
     public void on(OrderCancelledEvent event) {
         log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
     }
 
-    private void cancelOrder(String reason) {
+    private void cancelOrder(String message) {
         if (!isOrderCancelled) {
             isOrderCancelled = true;
             CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
                     .orderId(orderId)
                     .customerId(customerId)
-                    .reason(reason)
+                    .message(message)
                     .build();
             commandGateway.send(cancelOrderCommand);
         }
@@ -194,39 +210,96 @@ public class CreateOrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(PaymentProcessedEvent event) {
         log.info("[Saga] Received PaymentProcessedEvent for paymentId {}", event.getPaymentId());
-
-        this.shippingId = UUID.randomUUID();
         this.paymentStatus = event.getStatus();
-        this.totalAmount = event.getAmount();
-        CreateShippingCommand createShippingCommand = CreateShippingCommand.builder()
-                .shippingId(this.shippingId)
+        this.totalAmount = event.getTotalAmount();
+        this.updatedAt = event.getUpdatedAt();
+        UpdatePaymentStatusCommand updatePaymentStatusCommand = UpdatePaymentStatusCommand.builder()
                 .orderId(orderId)
-                .customerId(customerId)
-                .address(address)
-                .city(city)
-                .state(state)
-                .zipCode(zipCode)
+                .paymentId(paymentId)
+                .paymentStatus(paymentStatus)
+                .message("Payment processed")
+                .updatedAt(updatedAt)
                 .customerName(customerName)
+                .customerEmail(customerEmail)
                 .build();
-        commandGateway.send(createShippingCommand);
+        commandGateway.send(updatePaymentStatusCommand);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
-    public void on(ShippingCreatedEvent event) {
-        log.info("[Saga] Received ShippingCreatedEvent for shippingId {}", event.getShippingId());
+    public void on(PaymentStatusUpdatedEvent event) {
+        log.info("[Saga] Received PaymentStatusUpdatedEvent for paymentId {}, status: {}", event.getPaymentId(), event.getPaymentStatus());
+        this.paymentStatus = event.getPaymentStatus();
+        this.updatedAt = event.getUpdatedAt();
+
+        if (event.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            InitiateShippingCommand initiateShippingCommand = InitiateShippingCommand.builder()
+                    .shippingId(UUID.randomUUID())
+                    .orderId(orderId)
+                    .customerId(customerId)
+                    .address(address)
+                    .city(city)
+                    .state(state)
+                    .zipCode(zipCode)
+                    .customerName(customerName)
+                    .customerEmail(customerEmail)
+                    .build();
+            commandGateway.send(initiateShippingCommand);
+        }
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(ShippingInitiatedEvent event) {
+        log.info("[Saga] Received ShippingInitiatedEvent for shippingId {}", event.getShippingId());
+        this.shippingId = event.getShippingId();
+        this.shippingStatus = event.getStatus();
+        this.updatedAt = event.getUpdatedAt();
+
+        UpdateShippingStatusCommand updateShippingStatusCommand = UpdateShippingStatusCommand.builder()
+                .orderId(orderId)
+                .shippingId(shippingId)
+                .shippingStatus(shippingStatus)
+                .message("Shipping initiated")
+                .updatedAt(updatedAt)
+                .build();
+
+        commandGateway.send(updateShippingStatusCommand);
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(ShippingProcessedEvent event) {
+        log.info("[Saga] Received ShippingProcessedEvent for shippingId {}", event.getShippingId());
+        this.shippingStatus = event.getStatus();
+        this.updatedAt = event.getUpdatedAt();
+
+        UpdateShippingStatusCommand updateShippingStatusCommand = UpdateShippingStatusCommand.builder()
+                .orderId(orderId)
+                .shippingId(shippingId)
+                .shippingStatus(shippingStatus)
+                .message("Shipping processed")
+                .updatedAt(updatedAt)
+                .build();
+
+        commandGateway.send(updateShippingStatusCommand);
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(ShippingStatusUpdatedEvent event) {
+        log.info("[Saga] Received ShippingStatusUpdatedEvent for shippingId {} with status: {}",
+                event.getShippingId(),
+                event.getShippingStatus()
+        );
+        this.shippingStatus = event.getShippingStatus();
+        this.updatedAt = event.getUpdatedAt();
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(ShippingDeliveredEvent event) {
+        log.info("[Saga] Received ShippingDeliveredEvent for shippingId {}", event.getShippingId());
         CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
                 .orderId(orderId)
-                .customerId(customerId)
-                .paymentId(paymentId)
-                .shippingId(event.getShippingId())
                 .orderStatus(OrderStatus.COMPLETED)
-                .paymentStatus(paymentStatus)
-                .shippingStatus(event.getStatus())
-                .customerName(customerName)
-                .customerEmail(customerEmail)
-                .totalAmount(totalAmount)
-                .completedAt(LocalDateTime.now())
-                .items(items)
+                .shippingStatus(ShippingStatus.DELIVERED)
+                .paymentStatus(PaymentStatus.COMPLETED)
                 .build();
         commandGateway.send(completeOrderCommand);
     }

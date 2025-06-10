@@ -82,7 +82,7 @@ public class ProductAggregate {
                     .orderId(command.getOrderId())
                     .productId(command.getProductId())
                     .customerId(command.getCustomerId())
-                    .reason("Product is not active")
+                    .message("Product is not active")
                     .build();
             apply(event);
         }
@@ -91,7 +91,7 @@ public class ProductAggregate {
                     .orderId(command.getOrderId())
                     .productId(command.getProductId())
                     .customerId(command.getCustomerId())
-                    .reason("Not enough stock for the order " + command.getOrderId())
+                    .message("Not enough stock for the order " + command.getOrderId())
                     .build();
             apply(event);
         }
@@ -100,7 +100,7 @@ public class ProductAggregate {
                     .orderId(command.getOrderId())
                     .productId(command.getProductId())
                     .customerId(command.getCustomerId())
-                    .reason("Product price mismatch")
+                    .message("Product price mismatch")
                     .build());
         }
         else {

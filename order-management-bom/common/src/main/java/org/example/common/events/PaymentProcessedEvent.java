@@ -18,8 +18,9 @@ public class PaymentProcessedEvent {
     private UUID paymentId;
     private UUID orderId;
     private UUID customerId;
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
     private PaymentStatus status;
+    private String message;
     private LocalDateTime updatedAt;
 }
 

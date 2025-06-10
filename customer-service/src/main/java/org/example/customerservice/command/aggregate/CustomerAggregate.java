@@ -80,14 +80,14 @@ public class CustomerAggregate {
             CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
                     .customerId(command.getCustomerId())
                     .orderId(command.getOrderId())
-                    .reason("Customer is not active")
+                    .message("Customer is not active")
                     .build();
             apply(customerValidationFailedEvent);
         } else if(!this.creditApproved) {
             CustomerValidationFailedEvent customerValidationFailedEvent = CustomerValidationFailedEvent.builder()
                     .customerId(command.getCustomerId())
                     .orderId(command.getOrderId())
-                    .reason("Customer credit is not approved")
+                    .message("Customer credit is not approved")
                     .build();
             apply(customerValidationFailedEvent);
         } else {

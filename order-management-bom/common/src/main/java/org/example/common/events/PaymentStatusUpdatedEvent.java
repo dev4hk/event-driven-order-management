@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.common.constants.PaymentStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,14 +13,12 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentFailedEvent {
-
-    private UUID paymentId;
+public class PaymentStatusUpdatedEvent {
     private UUID orderId;
-    private UUID customerId;
-    private BigDecimal amount;
-    private PaymentStatus status;
+    private UUID paymentId;
+    private PaymentStatus paymentStatus;
     private String message;
     private LocalDateTime updatedAt;
-
+    private String customerName;
+    private String customerEmail;
 }

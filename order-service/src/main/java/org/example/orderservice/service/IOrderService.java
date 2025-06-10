@@ -31,16 +31,22 @@ public interface IOrderService {
             String customerEmail,
             List<OrderItem> items
     );
-    void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt);
+
+    void updateOrderStatus(UUID orderId, OrderStatus status, PaymentStatus paymentStatus, ShippingStatus shippingStatus, LocalDateTime updatedAt);
+
+    void cancelOrder(UUID orderId, OrderStatus status, String message, LocalDateTime cancelledAt);
 
     void updateOrderStatus(
             UUID orderId,
             PaymentStatus paymentStatus,
             ShippingStatus shippingStatus,
             List<OrderItemDto> items,
-            String reason,
+            String message,
             LocalDateTime cancelledAt
     );
 
-    void updateShippingStatus(UUID shippingId, ShippingStatus status, LocalDateTime updatedAt);
+    void updatePaymentStatus(UUID orderId, UUID paymentId, PaymentStatus paymentStatus, String message, LocalDateTime updatedAt, String customerName, String customerEmail);
+
+    void updateShippingStatus(UUID orderId, UUID shippingId, ShippingStatus status, String message, LocalDateTime updatedAt);
+
 }

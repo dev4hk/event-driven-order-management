@@ -17,6 +17,6 @@ public class CancelShippingCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
     private UUID orderId;
-    private String reason;
+    private String message;
 
 }

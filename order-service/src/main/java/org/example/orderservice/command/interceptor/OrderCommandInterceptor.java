@@ -3,15 +3,13 @@ package org.example.orderservice.command.interceptor;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
+import org.example.common.commands.UpdatePaymentStatusCommand;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
-import org.example.orderservice.command.CancelOrderCommand;
-import org.example.orderservice.command.CompleteOrderCommand;
-import org.example.orderservice.command.CreateOrderCommand;
-import org.example.orderservice.command.RequestOrderCancellationCommand;
+import org.example.orderservice.command.*;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.exception.InvalidOrderDataException;
 import org.example.orderservice.exception.OrderLifecycleViolationException;
@@ -24,7 +22,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -38,14 +35,18 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         return (index, command) -> {
             Object payload = command.getPayload();
 
-            if (payload instanceof CreateOrderCommand) {
-                validateCreateOrder((CreateOrderCommand) payload);
+            if (payload instanceof InitiateOrderCommand) {
+                validateCreateOrder((InitiateOrderCommand) payload);
             } else if (payload instanceof CancelOrderCommand) {
                 validateCancelOrder((CancelOrderCommand) payload);
             } else if (payload instanceof CompleteOrderCommand) {
                 validateCompleteOrder((CompleteOrderCommand) payload);
             } else if (payload instanceof RequestOrderCancellationCommand) {
                 validateRequestOrderCancellation((RequestOrderCancellationCommand) payload);
+            } else if (payload instanceof UpdatePaymentStatusCommand) {
+                validateUpdatePaymentStatus((UpdatePaymentStatusCommand) payload);
+            } else if (payload instanceof UpdateShippingStatusCommand) {
+                validateUpdateShippingStatus((UpdateShippingStatusCommand) payload);
             }
 
             return command;
@@ -57,7 +58,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
                 .orElseThrow(() -> new ResourceNotFoundException("Order with ID " + orderId + " does not exist."));
     }
 
-    private void validateCreateOrder(CreateOrderCommand command) {
+    private void validateCreateOrder(InitiateOrderCommand command) {
         if (command.getOrderId() == null) {
             throw new InvalidOrderDataException("Order ID must not be null.");
         }
@@ -92,14 +93,9 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
 
         if (
                 command.getOrderId() == null
-                        || command.getCustomerId() == null
-                        || command.getPaymentId() == null
-                        || command.getShippingId() == null
                         || command.getOrderStatus() == null
                         || command.getPaymentStatus() == null
                         || command.getShippingStatus() == null
-                        || command.getCustomerName() == null
-                        || command.getCustomerEmail() == null
 
         ) {
             throw new InvalidOrderDataException("Order ID, Customer ID, Payment ID, Shipping ID, Order Status, Payment Status, Shipping Status, Customer Name and Customer Email must not be null.");
@@ -119,7 +115,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         }
         Order existingOrder = getExistingOrder(command.getOrderId());
 
-        if(existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+        if (existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
             throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already cancelled.");
         }
 
@@ -129,6 +125,25 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
 
         List<OrderItemDto> items = OrderMapper.toDtoList(existingOrder.getItems());
         command.setItems(items);
+    }
+
+    private void validateUpdatePaymentStatus(UpdatePaymentStatusCommand command) {
+        if (command.getOrderId() == null || command.getPaymentStatus() == null || command.getUpdatedAt() == null) {
+            throw new InvalidOrderDataException("Order ID, Payment Status, and Updated At must not be null.");
+        }
+
+        Order existingOrder = getExistingOrder(command.getOrderId());
+
+        if (existingOrder.getStatus().equals(OrderStatus.COMPLETED) || existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
+        }
+    }
+
+
+    private void validateUpdateShippingStatus(UpdateShippingStatusCommand command) {
+        if(command.getOrderId() == null || command.getShippingStatus() == null || command.getUpdatedAt() == null) {
+            throw new InvalidOrderDataException("Order ID, Shipping Status, and Updated At must not be null.");
+        }
     }
 
     private void validateOrderItems(List<OrderItemDto> items) {

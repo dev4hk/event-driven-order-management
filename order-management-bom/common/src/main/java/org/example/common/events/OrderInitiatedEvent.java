@@ -3,6 +3,7 @@ package org.example.common.events;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.common.constants.OrderStatus;
 import org.example.common.dto.OrderItemDto;
 
 import java.math.BigDecimal;
@@ -13,13 +14,15 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCancellationRequestedEvent {
+public class OrderInitiatedEvent {
     private UUID orderId;
     private UUID customerId;
-    private UUID paymentId;
-    private UUID shippingId;
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
-    private String message;
-    private LocalDateTime cancelledAt;
+    private String address;
+    private String city;
+    private String state;
+    private String zipCode;
+    private OrderStatus status;
+    private LocalDateTime createdAt;
 }

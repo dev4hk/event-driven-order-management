@@ -1,9 +1,6 @@
 package org.example.paymentservice.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,16 +21,20 @@ public class Payment {
     @Id
     private UUID paymentId;
 
+    @Column(nullable = false)
     private UUID orderId;
 
+    @Column(nullable = false)
     private UUID customerId;
 
-    private BigDecimal amount;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private String reason;
+    @Column(length = 255)
+    private String message;
 
     private LocalDateTime updatedAt;
 }

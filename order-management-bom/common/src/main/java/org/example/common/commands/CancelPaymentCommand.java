@@ -19,5 +19,5 @@ public class CancelPaymentCommand {
     private UUID orderId;
     private UUID customerId;
     private BigDecimal amount;
-    private String reason;
+    private String message;
 }

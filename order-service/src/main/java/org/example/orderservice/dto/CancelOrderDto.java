@@ -20,5 +20,5 @@ public class CancelOrderDto {
     private UUID customerId;
 
     @Size(max = 255, message = "Reason must be at most 255 characters")
-    private String reason;
+    private String message;
 }

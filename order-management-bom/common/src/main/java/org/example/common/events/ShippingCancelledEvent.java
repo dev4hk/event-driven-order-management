@@ -17,7 +17,7 @@ public class ShippingCancelledEvent {
 
     private UUID shippingId;
     private UUID orderId;
-    private String reason;
+    private String message;
     private ShippingStatus status;
     private LocalDateTime cancelledAt;
 

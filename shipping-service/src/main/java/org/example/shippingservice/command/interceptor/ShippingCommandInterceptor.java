@@ -6,7 +6,7 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
-import org.example.common.commands.CreateShippingCommand;
+import org.example.common.commands.InitiateShippingCommand;
 import org.example.shippingservice.command.DeliverShippingCommand;
 import org.example.shippingservice.command.ProcessShippingCommand;
 import org.example.shippingservice.entity.Shipping;
@@ -30,8 +30,8 @@ public class ShippingCommandInterceptor implements MessageDispatchInterceptor<Co
         return (index, command) -> {
             Object payload = command.getPayload();
 
-            if (payload instanceof CreateShippingCommand) {
-                validateCreateShipping((CreateShippingCommand) payload);
+            if (payload instanceof InitiateShippingCommand) {
+                validateCreateShipping((InitiateShippingCommand) payload);
             } else if (payload instanceof ProcessShippingCommand) {
                 validateProcessShipping((ProcessShippingCommand) payload);
             } else if (payload instanceof DeliverShippingCommand) {
@@ -47,7 +47,7 @@ public class ShippingCommandInterceptor implements MessageDispatchInterceptor<Co
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found for ID: " + shippingId));
     }
 
-    private void validateCreateShipping(CreateShippingCommand command) {
+    private void validateCreateShipping(InitiateShippingCommand command) {
         if (command.getShippingId() == null ||
                 command.getOrderId() == null ||
                 command.getCustomerId() == null ||

@@ -22,15 +22,7 @@ import java.util.UUID;
 public class CompleteOrderCommand {
     @TargetAggregateIdentifier
     private UUID orderId;
-    private UUID customerId;
-    private UUID paymentId;
-    private UUID shippingId;
-    private BigDecimal totalAmount;
     private OrderStatus orderStatus;
     private PaymentStatus paymentStatus;
     private ShippingStatus shippingStatus;
-    private String customerEmail;
-    private String customerName;
-    private LocalDateTime completedAt;
-    private List<OrderItemDto> items;
 }

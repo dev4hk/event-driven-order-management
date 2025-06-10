@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ShippingDeliveredEvent {
     private UUID shippingId;
+    private UUID orderId;
     private ShippingStatus status;
     private LocalDateTime updatedAt;
 }

@@ -26,4 +26,16 @@ public class CustomerExceptionHandler extends GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(InvalidCustomerDataException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidCustomerDataException(InvalidCustomerDataException ex, WebRequest request) {
+        ErrorResponseDto errorResponse = ErrorResponseDto.builder()
+                .path(request.getDescription(false))
+                .status(HttpStatus.BAD_REQUEST)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
 }

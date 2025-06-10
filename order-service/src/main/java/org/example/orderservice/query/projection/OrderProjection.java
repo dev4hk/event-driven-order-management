@@ -21,34 +21,50 @@ public class OrderProjection {
     private final IOrderService iOrderService;
 
     @EventHandler
-    public void on(OrderCreatedEvent event) {
+    public void on(OrderInitiatedEvent event) {
         Order order = new Order();
         BeanUtils.copyProperties(event, order);
         iOrderService.createOrder(order);
     }
 
     @EventHandler
-    public void on(OrderCancelledEvent event) {
-        iOrderService.cancelOrder(event.getOrderId(), event.getStatus(), event.getReason(), event.getCancelledAt());
+    public void on(PaymentStatusUpdatedEvent event) {
+        iOrderService.updatePaymentStatus(
+                event.getOrderId(),
+                event.getPaymentId(),
+                event.getPaymentStatus(),
+                event.getMessage(),
+                event.getUpdatedAt(),
+                event.getCustomerName(),
+                event.getCustomerEmail()
+        );
+    }
+
+    @EventHandler
+    public void on(ShippingStatusUpdatedEvent event) {
+        iOrderService.updateShippingStatus(
+                event.getOrderId(),
+                event.getShippingId(),
+                event.getShippingStatus(),
+                event.getMessage(),
+                event.getUpdatedAt()
+        );
     }
 
     @EventHandler
     public void on(OrderCompletedEvent event) {
-        List<OrderItem> items = OrderMapper.toEntityList(event.getItems());
         iOrderService.updateOrderStatus(
                 event.getOrderId(),
-                event.getCustomerId(),
-                event.getPaymentId(),
-                event.getShippingId(),
-                event.getTotalAmount(),
                 event.getOrderStatus(),
                 event.getPaymentStatus(),
                 event.getShippingStatus(),
-                event.getCompletedAt(),
-                event.getCustomerName(),
-                event.getCustomerEmail(),
-                items
+                event.getCompletedAt()
         );
+    }
+
+    @EventHandler
+    public void on(OrderCancelledEvent event) {
+        iOrderService.cancelOrder(event.getOrderId(), event.getStatus(), event.getMessage(), event.getCancelledAt());
     }
 
     @EventHandler
@@ -59,7 +75,7 @@ public class OrderProjection {
                 event.getPaymentStatus(),
                 event.getShippingStatus(),
                 event.getItems(),
-                event.getReason(),
+                event.getMessage(),
                 event.getCancelledAt()
         );
     }

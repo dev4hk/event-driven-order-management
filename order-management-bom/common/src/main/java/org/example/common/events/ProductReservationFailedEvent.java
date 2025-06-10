@@ -15,5 +15,5 @@ public class ProductReservationFailedEvent {
     private UUID orderId;
     private UUID productId;
     private UUID customerId;
-    private String reason;
+    private String message;
 }

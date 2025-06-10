@@ -54,4 +54,13 @@ public class OrderMapper {
                 .map(OrderMapper::toEntity)
                 .collect(Collectors.toList());
     }
+
+    public static List<OrderItemDto> toDtoList(List<OrderItem> entityList) {
+        if (entityList == null) {
+            return new ArrayList<>();
+        }
+        return entityList.stream()
+                .map(OrderMapper::toItemDto)
+                .collect(Collectors.toList());
+    }
 }

@@ -98,10 +98,23 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
+    public void updateOrderStatus(UUID orderId, OrderStatus status, PaymentStatus paymentStatus, ShippingStatus shippingStatus, LocalDateTime updatedAt) {
+        if(orderId == null) {
+            throw new ResourceNotFoundException("Order ID must not be null.");
+        }
+        Order existingOrder = getOrderById(orderId);
+        existingOrder.setStatus(status);
+        existingOrder.setPaymentStatus(paymentStatus);
+        existingOrder.setShippingStatus(shippingStatus);
+        existingOrder.setUpdatedAt(updatedAt);
+        orderRepository.save(existingOrder);
+    }
+
+    @Override
     public void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt) {
         Order existingOrder = getOrderById(orderId);
         existingOrder.setStatus(status);
-        existingOrder.setReason(reason);
+        existingOrder.setMessage(reason);
         existingOrder.setUpdatedAt(cancelledAt);
         orderRepository.save(existingOrder);
     }
@@ -123,17 +136,46 @@ public class OrderServiceImpl implements IOrderService {
         }
         existingOrder.setPaymentStatus(paymentStatus);
         existingOrder.setShippingStatus(shippingStatus);
-        existingOrder.setReason(reason);
+        existingOrder.setMessage(reason);
         existingOrder.setUpdatedAt(cancelledAt);
         orderRepository.save(existingOrder);
     }
 
     @Override
-    public void updateShippingStatus(UUID shippingId, ShippingStatus status, LocalDateTime updatedAt) {
-        Order existingOrder = orderRepository.findByShippingId(shippingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with ID: " + shippingId));
+    public void updateShippingStatus(UUID orderId, UUID shippingId, ShippingStatus status, String message, LocalDateTime updatedAt) {
+        Order existingOrder = getOrderById(orderId);
+        if(status.equals(ShippingStatus.INITIATED)) {
+            existingOrder.setShippingId(shippingId);
+        }
+        else if(!existingOrder.getShippingId().equals(shippingId)) {
+            throw new ResourceNotFoundException("Order with this shipping ID does not exist: " + shippingId);
+        }
         existingOrder.setShippingStatus(status);
         existingOrder.setUpdatedAt(updatedAt);
+        existingOrder.setMessage(message);
         orderRepository.save(existingOrder);
     }
+
+    @Override
+    public void updatePaymentStatus(UUID orderId, UUID paymentId, PaymentStatus paymentStatus, String message, LocalDateTime updatedAt, String customerName, String customerEmail) {
+        Order existingOrder = getOrderById(orderId);
+        if (existingOrder.getPaymentId() == null) {
+            existingOrder.setPaymentId(paymentId);
+        }
+        if(existingOrder.getPaymentId() != null && !existingOrder.getPaymentId().equals(paymentId)) {
+            throw new ResourceNotFoundException("Order with this payment ID does not exist: " + paymentId);
+        }
+        if(existingOrder.getCustomerName() == null) {
+            existingOrder.setCustomerName(customerName);
+        }
+        if(existingOrder.getCustomerEmail() == null) {
+            existingOrder.setCustomerEmail(customerEmail);
+        }
+        existingOrder.setPaymentStatus(paymentStatus);
+        existingOrder.setUpdatedAt(updatedAt);
+        existingOrder.setMessage(message);
+
+        orderRepository.save(existingOrder);
+    }
+
 }

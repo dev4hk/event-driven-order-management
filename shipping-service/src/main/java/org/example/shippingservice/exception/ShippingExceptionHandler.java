@@ -14,7 +14,19 @@ import java.time.LocalDateTime;
 public class ShippingExceptionHandler extends GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidShippingStateException.class)
-    public ResponseEntity<ErrorResponseDto> handleAllExceptions(InvalidShippingStateException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponseDto> handleInvalidShippingStateExceptions(InvalidShippingStateException ex, WebRequest request) {
+        ErrorResponseDto errorResponse = ErrorResponseDto.builder()
+                .path(request.getDescription(false))
+                .status(HttpStatus.BAD_REQUEST)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidShippingDataException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidShippingDataException(InvalidShippingDataException ex, WebRequest request) {
         ErrorResponseDto errorResponse = ErrorResponseDto.builder()
                 .path(request.getDescription(false))
                 .status(HttpStatus.BAD_REQUEST)
