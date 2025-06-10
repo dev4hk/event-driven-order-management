@@ -6,7 +6,7 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.customerservice.command.CreateCustomerCommand;
-import org.example.customerservice.command.DeleteCustomerCommand;
+import org.example.customerservice.command.DeactivateCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
 import org.example.customerservice.entity.Customer;
 import org.example.customerservice.exception.InvalidCustomerDataException;
@@ -34,8 +34,8 @@ public class CustomerCommandInterceptor implements MessageDispatchInterceptor<Co
                 validateCreateCustomer((CreateCustomerCommand) payload);
             } else if (payload instanceof UpdateCustomerCommand) {
                 validateUpdateCustomer((UpdateCustomerCommand) payload);
-            } else if (payload instanceof DeleteCustomerCommand) {
-                validateDeleteCustomer((DeleteCustomerCommand) payload);
+            } else if (payload instanceof DeactivateCustomerCommand) {
+                validateDeleteCustomer((DeactivateCustomerCommand) payload);
             }
 
             return command;
@@ -61,7 +61,7 @@ public class CustomerCommandInterceptor implements MessageDispatchInterceptor<Co
         Customer existingCustomer = getActiveCustomerById(command.getCustomerId());
     }
 
-    private void validateDeleteCustomer(DeleteCustomerCommand command) {
+    private void validateDeleteCustomer(DeactivateCustomerCommand command) {
         getActiveCustomerById(command.getCustomerId());
     }
 }

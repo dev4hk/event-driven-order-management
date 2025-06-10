@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface ICustomerService {
     void createCustomer(Customer customer);
     boolean updateCustomer(Customer customer);
-    void deleteCustomer(UUID customerId);
+    void deactivateCustomer(UUID customerId);
 
     List<Customer> getAllCustomers();
     Customer getCustomerById(UUID customerId);

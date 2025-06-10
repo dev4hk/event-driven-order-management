@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeleteCustomerCommand {
+public class DeactivateCustomerCommand {
     @TargetAggregateIdentifier
     private UUID customerId;
 }

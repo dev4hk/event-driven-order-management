@@ -40,7 +40,7 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
-    public void deleteCustomer(UUID customerId) {
+    public void deactivateCustomer(UUID customerId) {
         Customer existing = customerRepository.findByCustomerIdAndActive(customerId, true)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + customerId + " not found"));
         existing.setActive(false);

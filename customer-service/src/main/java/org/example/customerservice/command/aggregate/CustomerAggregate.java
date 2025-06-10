@@ -9,7 +9,7 @@ import org.example.common.commands.ValidateCustomerCommand;
 import org.example.common.events.*;
 import org.example.customerservice.command.ApproveCustomerCreditCommand;
 import org.example.customerservice.command.CreateCustomerCommand;
-import org.example.customerservice.command.DeleteCustomerCommand;
+import org.example.customerservice.command.DeactivateCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
 import org.example.customerservice.command.events.CustomerCreditApprovedEvent;
 import org.springframework.beans.BeanUtils;
@@ -63,14 +63,14 @@ public class CustomerAggregate {
     }
 
     @CommandHandler
-    public void handle(DeleteCustomerCommand command) {
-        CustomerDeletedEvent customerDeletedEvent = new CustomerDeletedEvent();
+    public void handle(DeactivateCustomerCommand command) {
+        CustomerDeactivatedEvent customerDeletedEvent = new CustomerDeactivatedEvent();
         BeanUtils.copyProperties(command, customerDeletedEvent);
         apply(customerDeletedEvent);
     }
 
     @EventSourcingHandler
-    public void on(CustomerDeletedEvent event) {
+    public void on(CustomerDeactivatedEvent event) {
         this.active = false;
     }
 
@@ -120,5 +120,4 @@ public class CustomerAggregate {
     public void on(CustomerCreditApprovedEvent event) {
         this.creditApproved = true;
     }
-
 }

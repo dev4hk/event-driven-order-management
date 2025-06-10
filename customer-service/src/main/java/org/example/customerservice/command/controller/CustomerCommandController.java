@@ -6,7 +6,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.example.common.dto.CommonResponseDto;
 import org.example.customerservice.command.ApproveCustomerCreditCommand;
 import org.example.customerservice.command.CreateCustomerCommand;
-import org.example.customerservice.command.DeleteCustomerCommand;
+import org.example.customerservice.command.DeactivateCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
 import org.example.customerservice.dto.CreateCustomerDto;
 import org.example.customerservice.dto.UpdateCustomerDto;
@@ -51,14 +51,14 @@ public class CustomerCommandController {
                 .thenApply(result -> CommonResponseDto.success("Customer updated successfully"));
     }
 
-    @DeleteMapping("/delete/{customerId}")
+    @DeleteMapping("/deactivate/{customerId}")
     public CompletableFuture<CommonResponseDto<Void>> delete(@PathVariable("customerId") UUID customerId) {
-        DeleteCustomerCommand command = DeleteCustomerCommand.builder()
+        DeactivateCustomerCommand command = DeactivateCustomerCommand.builder()
                 .customerId(customerId)
                 .build();
 
         return commandGateway.send(command)
-                .thenApply(result -> CommonResponseDto.success("Customer deleted successfully"));
+                .thenApply(result -> CommonResponseDto.success("Customer deactivated successfully"));
     }
 
     @PutMapping("/credit-approve/{customerId}")

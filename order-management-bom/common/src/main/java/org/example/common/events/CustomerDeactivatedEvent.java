@@ -9,6 +9,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerDeletedEvent {
+public class CustomerDeactivatedEvent {
     private UUID customerId;
 }

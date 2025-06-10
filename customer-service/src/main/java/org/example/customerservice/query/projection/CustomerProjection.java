@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.CustomerCreatedEvent;
-import org.example.common.events.CustomerDeletedEvent;
+import org.example.common.events.CustomerDeactivatedEvent;
 import org.example.common.events.CustomerUpdatedEvent;
 import org.example.customerservice.command.events.CustomerCreditApprovedEvent;
 import org.example.customerservice.entity.Customer;
@@ -34,8 +34,8 @@ public class CustomerProjection {
     }
 
     @EventHandler
-    public void on(CustomerDeletedEvent event) {
-        iCustomerService.deleteCustomer(event.getCustomerId());
+    public void on(CustomerDeactivatedEvent event) {
+        iCustomerService.deactivateCustomer(event.getCustomerId());
     }
 
     @EventHandler
