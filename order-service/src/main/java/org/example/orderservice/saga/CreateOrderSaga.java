@@ -166,7 +166,7 @@ public class CreateOrderSaga {
     public void on(PaymentInitiatedEvent event) {
         log.info("[Saga] Received PaymentInitiatedEvent for paymentId {}", event.getPaymentId());
         this.paymentId = event.getPaymentId();
-        this.paymentStatus = event.getStatus();
+        this.paymentStatus = event.getPaymentStatus();
         this.updatedAt = event.getUpdatedAt();
 
         UpdatePaymentStatusCommand updatePaymentStatusCommand = UpdatePaymentStatusCommand.builder()
@@ -203,7 +203,7 @@ public class CreateOrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(PaymentProcessedEvent event) {
         log.info("[Saga] Received PaymentProcessedEvent for paymentId {}", event.getPaymentId());
-        this.paymentStatus = event.getStatus();
+        this.paymentStatus = event.getPaymentStatus();
         this.totalAmount = event.getTotalAmount();
         this.updatedAt = event.getUpdatedAt();
         UpdatePaymentStatusCommand updatePaymentStatusCommand = UpdatePaymentStatusCommand.builder()
@@ -244,7 +244,7 @@ public class CreateOrderSaga {
     public void on(ShippingInitiatedEvent event) {
         log.info("[Saga] Received ShippingInitiatedEvent for shippingId {}", event.getShippingId());
         this.shippingId = event.getShippingId();
-        this.shippingStatus = event.getStatus();
+        this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
 
         UpdateShippingStatusCommand updateShippingStatusCommand = UpdateShippingStatusCommand.builder()
@@ -261,7 +261,7 @@ public class CreateOrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(ShippingProcessedEvent event) {
         log.info("[Saga] Received ShippingProcessedEvent for shippingId {}", event.getShippingId());
-        this.shippingStatus = event.getStatus();
+        this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
 
         UpdateShippingStatusCommand updateShippingStatusCommand = UpdateShippingStatusCommand.builder()
