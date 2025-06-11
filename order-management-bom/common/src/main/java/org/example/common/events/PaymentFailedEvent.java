@@ -20,7 +20,7 @@ public class PaymentFailedEvent {
     private UUID orderId;
     private UUID customerId;
     private BigDecimal amount;
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
     private String message;
     private LocalDateTime updatedAt;
 

@@ -33,7 +33,7 @@ public class PaymentProjection {
                 event.getOrderId(),
                 event.getCustomerId(),
                 event.getTotalAmount(),
-                event.getStatus(),
+                event.getPaymentStatus(),
                 event.getMessage(),
                 event.getUpdatedAt()
         );
@@ -51,7 +51,7 @@ public class PaymentProjection {
     public void on(PaymentCancelledEvent event) {
         paymentService.cancelPayment(
                 event.getPaymentId(),
-                event.getStatus(),
+                event.getPaymentStatus(),
                 event.getMessage(),
                 event.getCancelledAt()
         );

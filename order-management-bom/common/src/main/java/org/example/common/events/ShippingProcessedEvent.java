@@ -14,6 +14,6 @@ import java.util.UUID;
 public class ShippingProcessedEvent {
     private UUID shippingId;
     private UUID orderId;
-    private ShippingStatus status;
+    private ShippingStatus shippingStatus;
     private LocalDateTime updatedAt;
 }

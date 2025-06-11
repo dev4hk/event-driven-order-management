@@ -21,7 +21,7 @@ public class ShippingInitiatedEvent {
     private String zipCode;
     private String customerName;
     private String customerEmail;
-    private ShippingStatus status;
+    private ShippingStatus shippingStatus;
     private String message;
     private LocalDateTime updatedAt;
 }

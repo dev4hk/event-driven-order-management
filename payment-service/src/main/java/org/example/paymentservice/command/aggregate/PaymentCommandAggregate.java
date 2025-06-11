@@ -8,11 +8,11 @@ import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.commands.CancelPaymentCommand;
 import org.example.common.commands.InitiatePaymentCommand;
+import org.example.common.commands.ProcessPaymentCommand;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.events.PaymentCancelledEvent;
 import org.example.common.events.PaymentInitiatedEvent;
 import org.example.common.events.PaymentProcessedEvent;
-import org.example.common.commands.ProcessPaymentCommand;
 import org.example.paymentservice.exception.InvalidPaymentStateException;
 import org.springframework.beans.BeanUtils;
 
@@ -29,7 +29,7 @@ public class PaymentCommandAggregate {
     private UUID orderId;
     private UUID customerId;
     private BigDecimal amount;
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
     private String message;
     private LocalDateTime updatedAt;
 
@@ -44,7 +44,7 @@ public class PaymentCommandAggregate {
     public PaymentCommandAggregate(InitiatePaymentCommand command) {
         PaymentInitiatedEvent event = new PaymentInitiatedEvent();
         BeanUtils.copyProperties(command, event);
-        event.setStatus(PaymentStatus.INITIATED);
+        event.setPaymentStatus(PaymentStatus.INITIATED);
         event.setUpdatedAt(LocalDateTime.now());
         event.setMessage("Payment initiated");
         AggregateLifecycle.apply(event);
@@ -57,7 +57,7 @@ public class PaymentCommandAggregate {
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
         this.amount = event.getTotalAmount();
-        this.status = event.getStatus();
+        this.paymentStatus = event.getPaymentStatus();
         this.updatedAt = event.getUpdatedAt();
         this.customerName = event.getCustomerName();
         this.customerEmail = event.getCustomerEmail();
@@ -70,12 +70,12 @@ public class PaymentCommandAggregate {
 
     @CommandHandler
     public void handle(CancelPaymentCommand command) {
-        if (!this.status.equals(PaymentStatus.COMPLETED)) {
+        if (!this.paymentStatus.equals(PaymentStatus.COMPLETED)) {
             throw new InvalidPaymentStateException("Cannot cancel a payment that is not completed.");
         }
         PaymentCancelledEvent event = new PaymentCancelledEvent();
         BeanUtils.copyProperties(command, event);
-        event.setStatus(PaymentStatus.CANCELLED);
+        event.setPaymentStatus(PaymentStatus.CANCELLED);
         event.setCancelledAt(LocalDateTime.now());
         AggregateLifecycle.apply(event);
     }
@@ -86,7 +86,7 @@ public class PaymentCommandAggregate {
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
         this.amount = event.getAmount();
-        this.status = event.getStatus();
+        this.paymentStatus = event.getPaymentStatus();
         this.message = event.getMessage();
         this.updatedAt = event.getCancelledAt();
     }
@@ -98,7 +98,7 @@ public class PaymentCommandAggregate {
                 .orderId(command.getOrderId())
                 .customerId(command.getCustomerId())
                 .totalAmount(command.getTotalAmount())
-                .status(PaymentStatus.COMPLETED)
+                .paymentStatus(PaymentStatus.COMPLETED)
                 .message("Payment processed")
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -111,7 +111,7 @@ public class PaymentCommandAggregate {
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
         this.amount = event.getTotalAmount();
-        this.status = event.getStatus();
+        this.paymentStatus = event.getPaymentStatus();
         this.updatedAt = event.getUpdatedAt();
     }
 

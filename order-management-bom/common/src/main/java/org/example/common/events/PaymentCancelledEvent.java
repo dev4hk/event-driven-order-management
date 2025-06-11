@@ -21,7 +21,7 @@ public class PaymentCancelledEvent {
     private UUID customerId;
     private BigDecimal amount;
     private String message;
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
     private LocalDateTime cancelledAt;
 
 }

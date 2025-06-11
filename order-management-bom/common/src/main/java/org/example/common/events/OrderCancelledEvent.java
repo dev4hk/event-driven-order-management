@@ -14,7 +14,7 @@ import java.util.UUID;
 public class OrderCancelledEvent {
     private UUID orderId;
     private UUID customerId;
-    private OrderStatus status;
+    private OrderStatus orderStatus;
     private String message;
     private LocalDateTime cancelledAt;
 }

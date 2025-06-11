@@ -16,7 +16,7 @@ public class OrderMapper {
         dto.setOrderId(order.getOrderId());
         dto.setCustomerId(order.getCustomerId());
         dto.setTotalAmount(order.getTotalAmount());
-        dto.setStatus(order.getOrderStatus().name());
+        dto.setOrderStatus(order.getOrderStatus());
         dto.setPaymentId(order.getPaymentId());
         dto.setShippingId(order.getShippingId());
         dto.setUpdatedAt(order.getUpdatedAt());

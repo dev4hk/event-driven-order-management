@@ -3,6 +3,7 @@ package org.example.customerservice.command.interceptor;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
+import org.example.common.commands.ValidateCustomerCommand;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
 import org.example.customerservice.command.CreateCustomerCommand;
@@ -36,6 +37,8 @@ public class CustomerCommandInterceptor implements MessageDispatchInterceptor<Co
                 validateUpdateCustomer((UpdateCustomerCommand) payload);
             } else if (payload instanceof DeactivateCustomerCommand) {
                 validateDeleteCustomer((DeactivateCustomerCommand) payload);
+            } else if (payload instanceof ValidateCustomerCommand) {
+                validateCustomer((ValidateCustomerCommand) payload);
             }
 
             return command;
@@ -62,6 +65,10 @@ public class CustomerCommandInterceptor implements MessageDispatchInterceptor<Co
     }
 
     private void validateDeleteCustomer(DeactivateCustomerCommand command) {
+        getActiveCustomerById(command.getCustomerId());
+    }
+
+    private void validateCustomer(ValidateCustomerCommand command) {
         getActiveCustomerById(command.getCustomerId());
     }
 }

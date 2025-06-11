@@ -20,6 +20,6 @@ public class FailPaymentCommand {
     private UUID paymentId;
     private UUID orderId;
     private BigDecimal amount;
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
     private String message;
 }

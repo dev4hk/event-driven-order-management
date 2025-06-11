@@ -3,6 +3,7 @@ package org.example.paymentservice.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.common.constants.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -14,5 +15,5 @@ public class PaymentResponseDto {
     private UUID paymentId;
     private UUID orderId;
     private BigDecimal amount;
-    private String status;
+    private PaymentStatus paymentStatus;
 }

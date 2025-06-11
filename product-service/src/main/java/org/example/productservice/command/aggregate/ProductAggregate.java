@@ -11,6 +11,8 @@ import org.example.common.events.*;
 import org.example.productservice.command.CreateProductCommand;
 import org.example.productservice.command.DeleteProductCommand;
 import org.example.productservice.command.UpdateProductCommand;
+import org.example.productservice.exception.InvalidProductDataException;
+import org.example.productservice.exception.InvalidProductStateException;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
@@ -78,30 +80,13 @@ public class ProductAggregate {
     @CommandHandler
     public void handle(ReserveProductCommand command) {
         if (!this.active) {
-            ProductReservationFailedEvent event = ProductReservationFailedEvent.builder()
-                    .orderId(command.getOrderId())
-                    .productId(command.getProductId())
-                    .customerId(command.getCustomerId())
-                    .message("Product is not active")
-                    .build();
-            apply(event);
+            throw new InvalidProductStateException("Product is inactive.");
         }
         else if (this.stock < command.getQuantity()) {
-            ProductReservationFailedEvent event = ProductReservationFailedEvent.builder()
-                    .orderId(command.getOrderId())
-                    .productId(command.getProductId())
-                    .customerId(command.getCustomerId())
-                    .message("Not enough stock for the order " + command.getOrderId())
-                    .build();
-            apply(event);
+            throw new InvalidProductDataException("Not enough stock for product " + command.getProductId());
         }
         else if (command.getPrice() == null || this.price.compareTo(command.getPrice()) != 0) {
-            apply(ProductReservationFailedEvent.builder()
-                    .orderId(command.getOrderId())
-                    .productId(command.getProductId())
-                    .customerId(command.getCustomerId())
-                    .message("Product price mismatch")
-                    .build());
+            throw new InvalidProductDataException("Product price mismatch for product " + command.getProductId());
         }
         else {
             ProductReservedEvent event = ProductReservedEvent.builder()

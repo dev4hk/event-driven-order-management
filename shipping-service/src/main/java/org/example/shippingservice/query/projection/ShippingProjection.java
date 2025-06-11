@@ -28,17 +28,17 @@ public class ShippingProjection {
 
     @EventHandler
     public void on(ShippingProcessedEvent event) {
-        shippingService.updateShippingStatus(event.getShippingId(), event.getStatus(), event.getUpdatedAt());
+        shippingService.updateShippingStatus(event.getShippingId(), event.getShippingStatus(), event.getUpdatedAt());
     }
 
     @EventHandler
     public void on(ShippingDeliveredEvent event) {
-        shippingService.updateShippingStatus(event.getShippingId(), event.getStatus(), event.getUpdatedAt());
+        shippingService.updateShippingStatus(event.getShippingId(), event.getShippingStatus(), event.getUpdatedAt());
     }
 
     @EventHandler
     public void on(ShippingCancelledEvent event) {
-        shippingService.cancelShipping(event.getShippingId(), event.getMessage(), event.getStatus(), event.getCancelledAt());
+        shippingService.cancelShipping(event.getShippingId(), event.getMessage(), event.getShippingStatus(), event.getCancelledAt());
     }
 
 

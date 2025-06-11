@@ -15,6 +15,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ShippingDataUpdatedEvent {
     private UUID shippingId;
-    private ShippingStatus status;
+    private ShippingStatus shippingStatus;
     private LocalDateTime updatedAt;
 }

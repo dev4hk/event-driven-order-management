@@ -33,19 +33,19 @@ public class ShippingAggregate {
     private String zipCode;
     private String customerName;
     private String customerEmail;
-    private ShippingStatus status;
+    private ShippingStatus shippingStatus;
     private String message;
     private LocalDateTime updatedAt;
 
     @CommandHandler
     public ShippingAggregate(InitiateShippingCommand command) {
-
-        ShippingInitiatedEvent event = new ShippingInitiatedEvent();
-        BeanUtils.copyProperties(command, event);
-        event.setStatus(ShippingStatus.INITIATED);
-        event.setUpdatedAt(LocalDateTime.now());
-        event.setMessage("Shipping initiated");
-        apply(event);
+        throw new RuntimeException("InitiateShippingCommand is deprecated. Use InitiateShippingV2Command instead.");
+//        ShippingInitiatedEvent event = new ShippingInitiatedEvent();
+//        BeanUtils.copyProperties(command, event);
+//        event.setStatus(ShippingStatus.INITIATED);
+//        event.setUpdatedAt(LocalDateTime.now());
+//        event.setMessage("Shipping initiated");
+//        apply(event);
     }
 
     @EventSourcingHandler
@@ -59,21 +59,21 @@ public class ShippingAggregate {
         this.zipCode = event.getZipCode();
         this.customerName = event.getCustomerName();
         this.customerEmail = event.getCustomerEmail();
-        this.status = event.getStatus();
+        this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
         this.message = event.getMessage();
     }
 
     @CommandHandler
     public void handle(ProcessShippingCommand command) {
-        if (this.status == ShippingStatus.SHIPPED || this.status == ShippingStatus.DELIVERED) {
+        if (this.shippingStatus == ShippingStatus.SHIPPED || this.shippingStatus == ShippingStatus.DELIVERED) {
             throw new InvalidShippingStateException("Cannot update shipping status after it has been shipped or delivered.");
         }
         ShippingProcessedEvent event = new ShippingProcessedEvent();
         BeanUtils.copyProperties(command, event);
         event.setOrderId(orderId);
         event.setUpdatedAt(LocalDateTime.now());
-        event.setStatus(ShippingStatus.SHIPPED);
+        event.setShippingStatus(ShippingStatus.SHIPPED);
         apply(event).andThen(() -> {
             ShippingDataUpdatedEvent shippingDataUpdatedEvent = new ShippingDataUpdatedEvent();
             BeanUtils.copyProperties(event, shippingDataUpdatedEvent);
@@ -83,18 +83,18 @@ public class ShippingAggregate {
 
     @EventSourcingHandler
     public void on(ShippingProcessedEvent event) {
-        this.status = event.getStatus();
+        this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
     }
 
     @CommandHandler
     public void handle(DeliverShippingCommand command) {
-        if (this.status != ShippingStatus.SHIPPED) {
+        if (this.shippingStatus != ShippingStatus.SHIPPED) {
             throw new InvalidShippingStateException("Cannot update shipping status as DELIVERED if it is not SHIPPED.");
         }
         ShippingDeliveredEvent event = new ShippingDeliveredEvent();
         BeanUtils.copyProperties(command, event);
-        event.setStatus(ShippingStatus.DELIVERED);
+        event.setShippingStatus(ShippingStatus.DELIVERED);
         event.setOrderId(orderId);
         event.setUpdatedAt(LocalDateTime.now());
         apply(event);
@@ -102,25 +102,25 @@ public class ShippingAggregate {
 
     @EventSourcingHandler
     public void on(ShippingDeliveredEvent event) {
-        this.status = event.getStatus();
+        this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
     }
 
     @CommandHandler
     public void handle(CancelShippingCommand command) {
-        if (this.status != ShippingStatus.INITIATED) {
+        if (this.shippingStatus != ShippingStatus.INITIATED) {
             throw new InvalidShippingStateException("Cannot update shipping status as CANCELLED if it is not PENDING.");
         }
         ShippingCancelledEvent event = new ShippingCancelledEvent();
         BeanUtils.copyProperties(command, event);
-        event.setStatus(ShippingStatus.CANCELLED);
+        event.setShippingStatus(ShippingStatus.CANCELLED);
         event.setCancelledAt(LocalDateTime.now());
         apply(event);
     }
 
     @EventSourcingHandler
     public void on(ShippingCancelledEvent event) {
-        this.status = event.getStatus();
+        this.shippingStatus = event.getShippingStatus();
         this.message = event.getMessage();
         this.updatedAt = event.getCancelledAt();
     }

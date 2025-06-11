@@ -21,7 +21,7 @@ public class PaymentInitiatedEvent {
     private UUID orderId;
     private UUID customerId;
     private BigDecimal totalAmount;
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
     private LocalDateTime updatedAt;
 
     private String customerName;
