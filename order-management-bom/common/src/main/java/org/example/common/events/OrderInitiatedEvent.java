@@ -25,4 +25,5 @@ public class OrderInitiatedEvent {
     private String zipCode;
     private OrderStatus orderStatus;
     private LocalDateTime createdAt;
+    private String message;
 }

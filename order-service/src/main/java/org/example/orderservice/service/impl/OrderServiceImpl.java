@@ -21,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderServiceImpl implements IOrderService {
 
     private final OrderRepository orderRepository;
@@ -43,11 +44,13 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Order getOrderById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
@@ -98,14 +101,13 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public void updateOrderStatus(UUID orderId, OrderStatus status, PaymentStatus paymentStatus, ShippingStatus shippingStatus, LocalDateTime updatedAt) {
+    public void updateOrderStatus(UUID orderId, OrderStatus status, String message, LocalDateTime updatedAt) {
         if(orderId == null) {
             throw new ResourceNotFoundException("Order ID must not be null.");
         }
         Order existingOrder = getOrderById(orderId);
         existingOrder.setOrderStatus(status);
-        existingOrder.setPaymentStatus(paymentStatus);
-        existingOrder.setShippingStatus(shippingStatus);
+        existingOrder.setMessage(message);
         existingOrder.setUpdatedAt(updatedAt);
         orderRepository.save(existingOrder);
     }
@@ -144,7 +146,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public void updateShippingStatus(UUID orderId, UUID shippingId, ShippingStatus status, String message, LocalDateTime updatedAt) {
         Order existingOrder = getOrderById(orderId);
-        if(status.equals(ShippingStatus.INITIATED)) {
+        if(existingOrder.getShippingId() == null || status.equals(ShippingStatus.SHIPPED)) {
             existingOrder.setShippingId(shippingId);
         }
         else if(!existingOrder.getShippingId().equals(shippingId)) {
@@ -153,6 +155,22 @@ public class OrderServiceImpl implements IOrderService {
         existingOrder.setShippingStatus(status);
         existingOrder.setUpdatedAt(updatedAt);
         existingOrder.setMessage(message);
+        orderRepository.save(existingOrder);
+    }
+
+    @Override
+    public void updateCustomerInfo(UUID orderId, UUID customerId, String customerName, String customerEmail, String message, LocalDateTime updatedAt) {
+        Order existingOrder = getOrderById(orderId);
+        if(existingOrder.getCustomerId() == null) {
+            throw new ResourceNotFoundException("Order with this customer ID does not exist: " + customerId);
+        }
+        if(!existingOrder.getCustomerId().equals(customerId)) {
+            throw new ResourceNotFoundException("Order with this customer ID does not exist: " + customerId);
+        }
+        existingOrder.setCustomerName(customerName);
+        existingOrder.setCustomerEmail(customerEmail);
+        existingOrder.setMessage(message);
+        existingOrder.setUpdatedAt(updatedAt);
         orderRepository.save(existingOrder);
     }
 

@@ -4,9 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.common.constants.PaymentStatus;
+import org.example.common.constants.ShippingStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,9 +13,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentFailedEvent {
-
+public class ShippingFailedEvent {
     private UUID orderId;
+    private UUID shippingId;
     private String message;
-
+    private ShippingStatus shippingStatus;
+    private LocalDateTime updatedAt;
 }

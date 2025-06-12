@@ -32,7 +32,7 @@ public interface IOrderService {
             List<OrderItem> items
     );
 
-    void updateOrderStatus(UUID orderId, OrderStatus status, PaymentStatus paymentStatus, ShippingStatus shippingStatus, LocalDateTime updatedAt);
+    void updateOrderStatus(UUID orderId, OrderStatus status, String message, LocalDateTime updatedAt);
 
     void cancelOrder(UUID orderId, OrderStatus status, String message, LocalDateTime cancelledAt);
 
@@ -49,4 +49,5 @@ public interface IOrderService {
 
     void updateShippingStatus(UUID orderId, UUID shippingId, ShippingStatus status, String message, LocalDateTime updatedAt);
 
+    void updateCustomerInfo(UUID orderId, UUID customerId, String customerName, String customerEmail, String message, LocalDateTime updatedAt);
 }

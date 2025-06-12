@@ -19,7 +19,6 @@ import java.util.UUID;
 public class OrderCompletedEvent {
     private UUID orderId;
     private OrderStatus orderStatus;
-    private PaymentStatus paymentStatus;
-    private ShippingStatus shippingStatus;
+    private String message;
     private LocalDateTime completedAt;
 }

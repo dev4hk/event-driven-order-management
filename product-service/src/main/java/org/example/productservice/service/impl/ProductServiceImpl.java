@@ -6,12 +6,14 @@ import org.example.productservice.exception.InvalidProductDataException;
 import org.example.productservice.repository.ProductRepository;
 import org.example.productservice.service.IProductService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImpl implements IProductService {
 
     private final ProductRepository productRepository;
@@ -42,11 +44,13 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         return productRepository.findByActive(true);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Product getProductById(UUID productId) {
         return productRepository.findByProductIdAndActive(productId, true)
                 .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));

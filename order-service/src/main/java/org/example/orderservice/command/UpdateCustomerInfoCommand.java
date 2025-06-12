@@ -1,22 +1,23 @@
-package org.example.common.commands;
+package org.example.orderservice.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
-import org.example.common.dto.ShippingDetails;
 
 import java.util.UUID;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class InitiateShippingCommand {
+@AllArgsConstructor
+public class UpdateCustomerInfoCommand {
+
     @TargetAggregateIdentifier
-    private UUID shippingId;
     private UUID orderId;
     private UUID customerId;
-    private ShippingDetails shippingDetails;
+    private String customerName;
+    private String customerEmail;
+
 }

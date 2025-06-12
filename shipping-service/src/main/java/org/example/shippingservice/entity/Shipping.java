@@ -24,9 +24,6 @@ public class Shipping {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    @Column(name = "customer_id", nullable = false)
-    private UUID customerId;
-
     @Column(nullable = false)
     private String address;
 
@@ -40,10 +37,7 @@ public class Shipping {
     private String zipCode;
 
     @Column(nullable = false)
-    private String customerName;
-
-    @Column(nullable = false)
-    private String customerEmail;
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

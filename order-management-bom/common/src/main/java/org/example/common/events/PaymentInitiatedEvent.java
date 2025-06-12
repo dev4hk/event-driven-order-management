@@ -5,10 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
-import org.example.common.constants.PaymentStatus;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -21,15 +19,4 @@ public class PaymentInitiatedEvent {
     private UUID orderId;
     private UUID customerId;
     private BigDecimal totalAmount;
-    private PaymentStatus paymentStatus;
-    private LocalDateTime updatedAt;
-
-    private String customerName;
-    private String customerEmail;
-    private String address;
-    private String city;
-    private String state;
-    private String zipCode;
-
-    private String message;
 }

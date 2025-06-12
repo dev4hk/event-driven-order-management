@@ -10,10 +10,8 @@ import java.util.UUID;
 
 public interface IPaymentService {
     void createPayment(Payment payment);
+    void cancelPayment(UUID paymentId, PaymentStatus status, String reason, LocalDateTime cancelledAt);
     Payment getPaymentById(UUID paymentId);
     List<Payment> getPaymentsByOrderId(UUID orderId);
     List<Payment> getAllPayments();
-    void cancelPayment(UUID paymentId, PaymentStatus status, String reason, LocalDateTime cancelledAt);
-    void updateStatus(UUID paymentId, PaymentStatus status, String reason, LocalDateTime updatedAt);
-    void updateStatus(UUID paymentId, UUID orderId, UUID customerId, BigDecimal totalAmount, PaymentStatus status, String message, LocalDateTime updatedAt);
 }

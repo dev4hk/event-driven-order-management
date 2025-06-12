@@ -19,31 +19,9 @@ public class PaymentProjection {
     private final IPaymentService paymentService;
 
     @EventHandler
-    public void on(PaymentInitiatedEvent event) {
-        Payment payment = new Payment();
-        BeanUtils.copyProperties(event, payment);
-        payment.setUpdatedAt(LocalDateTime.now());
-        paymentService.createPayment(payment);
-    }
-
-    @EventHandler
     public void on(PaymentProcessedEvent event) {
-        paymentService.updateStatus(
-                event.getPaymentId(),
-                event.getOrderId(),
-                event.getCustomerId(),
-                event.getTotalAmount(),
-                event.getPaymentStatus(),
-                event.getMessage(),
-                event.getUpdatedAt()
-        );
-    }
-
-    @EventHandler
-    public void on(PaymentFailedEvent event) {
         Payment payment = new Payment();
         BeanUtils.copyProperties(event, payment);
-        payment.setUpdatedAt(LocalDateTime.now());
         paymentService.createPayment(payment);
     }
 

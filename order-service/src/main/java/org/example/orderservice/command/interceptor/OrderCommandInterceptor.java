@@ -91,21 +91,11 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
 
     private void validateCompleteOrder(CompleteOrderCommand command) {
 
-        if (
-                command.getOrderId() == null
-                        || command.getOrderStatus() == null
-                        || command.getPaymentStatus() == null
-                        || command.getShippingStatus() == null
-
-        ) {
+        if (command.getOrderId() == null || command.getOrderStatus() == null) {
             throw new InvalidOrderDataException("Order ID, Customer ID, Payment ID, Shipping ID, Order Status, Payment Status, Shipping Status, Customer Name and Customer Email must not be null.");
         }
 
         Order existingOrder = getExistingOrder(command.getOrderId());
-
-        if (existingOrder.getOrderStatus().equals(OrderStatus.COMPLETED) || existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
-            throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
-        }
 
     }
 

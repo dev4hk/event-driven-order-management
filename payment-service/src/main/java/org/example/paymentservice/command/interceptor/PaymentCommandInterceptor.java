@@ -30,10 +30,10 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
     public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(List<? extends CommandMessage<?>> messages) {
         return (index, command) -> {
             Object payload = command.getPayload();
-
             if (payload instanceof InitiatePaymentCommand) {
                 validateInitiatePaymentCommand((InitiatePaymentCommand) payload);
-            } else if (payload instanceof ProcessPaymentCommand) {
+            }
+            if (payload instanceof ProcessPaymentCommand) {
                 validateProcessPaymentCommand((ProcessPaymentCommand) payload);
             } else if (payload instanceof CancelPaymentCommand) {
                 validateCancelPaymentCommand((CancelPaymentCommand) payload);
@@ -41,6 +41,7 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
             return command;
         };
     }
+
 
     private void validateCorePaymentData(UUID paymentId, UUID orderId, UUID customerId, BigDecimal amount) {
         if (paymentId == null || orderId == null || customerId == null) {
@@ -51,34 +52,18 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
         }
     }
 
-    private void validateInitiatePaymentCommand(InitiatePaymentCommand command) {
-        validateCorePaymentData(command.getPaymentId(), command.getOrderId(), command.getCustomerId(), command.getTotalAmount());
-        if(
-                command.getCustomerName() == null
-                || command.getCustomerEmail() == null
-                || command.getAddress() == null
-                || command.getCity() == null
-                || command.getState() == null
-                || command.getZipCode() == null
-        ) {
-            throw new InvalidPaymentDataException("Customer name, email, address, city, state, and zip code must not be null.");
-        }
-        if (paymentRepository.existsById(command.getPaymentId())) {
-            throw new ResourceAlreadyExistsException("Payment with this ID already exists: " + command.getPaymentId());
+    private void validateInitiatePaymentCommand(InitiatePaymentCommand payload) {
+        validateCorePaymentData(payload.getPaymentId(), payload.getOrderId(), payload.getCustomerId(), payload.getTotalAmount());
+        if (paymentRepository.existsById(payload.getPaymentId())) {
+            throw new ResourceAlreadyExistsException("Payment with this ID already exists: " + payload.getPaymentId());
         }
     }
 
     private void validateProcessPaymentCommand(ProcessPaymentCommand command) {
         validateCorePaymentData(command.getPaymentId(), command.getOrderId(), command.getCustomerId(), command.getTotalAmount());
 
-        Payment payment = paymentRepository.findById(command.getPaymentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Payment with this ID does not exist: " + command.getPaymentId()));
-
-        if(payment.getPaymentStatus().equals(PaymentStatus.COMPLETED) || payment.getPaymentStatus().equals(PaymentStatus.CANCELLED)) {
-            throw new InvalidPaymentStateException("Payment with ID " + command.getPaymentId() + " is already completed or cancelled.");
-        }
-        if (command.getTotalAmount().compareTo(payment.getTotalAmount()) != 0) {
-            throw new InvalidPaymentDataException("Amount in command must be equal to the original payment amount.");
+        if (paymentRepository.existsById(command.getPaymentId())) {
+            throw new ResourceAlreadyExistsException("Payment with this ID already exists: " + command.getPaymentId());
         }
     }
 

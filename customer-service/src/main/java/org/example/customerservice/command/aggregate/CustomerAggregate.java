@@ -96,10 +96,6 @@ public class CustomerAggregate {
     public void on(CustomerValidatedEvent event) {
     }
 
-    @EventSourcingHandler
-    public void on(CustomerValidationFailedEvent event) {
-    }
-
     @CommandHandler
     public void handle(ApproveCustomerCreditCommand command) {
         CustomerCreditApprovedEvent customerCreditApprovedEvent = new CustomerCreditApprovedEvent();

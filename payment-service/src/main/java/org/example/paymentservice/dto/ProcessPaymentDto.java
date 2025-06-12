@@ -18,9 +18,6 @@ public class ProcessPaymentDto {
     private UUID customerId;
 
     @NotNull(message = "Order ID must not be null")
-    private UUID paymentId;
-
-    @NotNull(message = "Order ID must not be null")
     private UUID orderId;
 
     @NotNull(message = "Total amount must not be null")

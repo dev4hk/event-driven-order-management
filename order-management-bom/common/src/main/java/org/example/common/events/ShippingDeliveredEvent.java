@@ -16,4 +16,5 @@ public class ShippingDeliveredEvent {
     private UUID orderId;
     private ShippingStatus shippingStatus;
     private LocalDateTime updatedAt;
+    private String message;
 }

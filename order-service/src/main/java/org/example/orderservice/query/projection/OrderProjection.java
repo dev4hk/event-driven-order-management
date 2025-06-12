@@ -56,8 +56,7 @@ public class OrderProjection {
         iOrderService.updateOrderStatus(
                 event.getOrderId(),
                 event.getOrderStatus(),
-                event.getPaymentStatus(),
-                event.getShippingStatus(),
+                event.getMessage(),
                 event.getCompletedAt()
         );
     }
@@ -77,6 +76,18 @@ public class OrderProjection {
                 event.getItems(),
                 event.getMessage(),
                 event.getCancelledAt()
+        );
+    }
+
+    @EventHandler
+    public void on(CustomerInfoUpdatedEvent event) {
+        iOrderService.updateCustomerInfo(
+                event.getOrderId(),
+                event.getCustomerId(),
+                event.getCustomerName(),
+                event.getCustomerEmail(),
+                event.getMessage(),
+                event.getUpdatedAt()
         );
     }
 

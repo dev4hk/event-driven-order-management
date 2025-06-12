@@ -16,5 +16,4 @@ import java.util.UUID;
 public class DeliverShippingCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
-    private ShippingStatus newStatus;
 }

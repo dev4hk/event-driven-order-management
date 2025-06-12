@@ -14,13 +14,14 @@ import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
+import org.example.common.dto.ShippingDetails;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.CompleteOrderCommand;
+import org.example.orderservice.command.UpdateCustomerInfoCommand;
 import org.example.orderservice.command.UpdateShippingStatusCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -56,11 +57,13 @@ public class CreateOrderSaga {
     private OrderStatus orderStatus;
     private PaymentStatus paymentStatus;
     private ShippingStatus shippingStatus;
+    private String message;
+    private ShippingDetails shippingDetails;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderInitiatedEvent event) {
-        log.info("[Saga] Received OrderInitiatedEvent for order {}", event.getOrderId());
+        log.info("[Saga] Received OrderInitiatedEvent for orderId {}, validating customer {}", event.getOrderId(), event.getCustomerId());
 
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
@@ -78,17 +81,17 @@ public class CreateOrderSaga {
                 .orderId(orderId)
                 .build();
 
-        commandGateway.send(command, new CommandCallback<ValidateCustomerCommand, Object>() {
-            @Override
-            public void onResult(@Nonnull CommandMessage<? extends ValidateCustomerCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
-                if (commandResultMessage.isExceptional()) {
-                    Throwable exception = commandResultMessage.exceptionResult();
-                    log.error("[Saga] Failed to dispatch ValidateCustomerCommand for customer {}: {}", customerId, exception.getMessage());
-                    cancelOrder("Customer validation dispatch failed: " + exception.getMessage());
-
+        commandGateway.send(
+                command,
+                (commandMessage, commandResultMessage) -> {
+                    if (commandResultMessage.isExceptional()) {
+                        Throwable exception = commandResultMessage.exceptionResult();
+                        log.error("[Saga] Failed to dispatch ValidateCustomerCommand for customer {}: {}", customerId, exception.getMessage());
+                        message = "Customer validation dispatch failed: " + exception.getMessage();
+                        cancelOrder(message);
+                    }
                 }
-            }
-        });
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -96,6 +99,32 @@ public class CreateOrderSaga {
         log.info("[Saga] Received CustomerValidatedEvent for customerId {}. Reserving {} products", event.getCustomerId(), items.size());
         this.customerName = event.getCustomerName();
         this.customerEmail = event.getCustomerEmail();
+
+        UpdateCustomerInfoCommand updateCustomerInfoCommand = UpdateCustomerInfoCommand.builder()
+                .orderId(orderId)
+                .customerId(customerId)
+                .customerName(customerName)
+                .customerEmail(customerEmail)
+                .build();
+
+        commandGateway.send(
+                updateCustomerInfoCommand,
+                (commandMessage, commandResultMessage) -> {
+                    if (commandResultMessage.isExceptional()) {
+                        Throwable exception = commandResultMessage.exceptionResult();
+                        log.error("[Saga] Failed to dispatch UpdateCustomerInfoCommand for customer {}: {}", customerId, exception.getMessage());
+                        message = "Customer info update dispatch failed: " + exception.getMessage();
+                        cancelOrder(message);
+                    }
+                }
+        );
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(CustomerInfoUpdatedEvent event) {
+        log.info("[Saga] Received CustomerInfoUpdatedEvent for customerId {}", event.getCustomerId());
+        this.message = event.getMessage();
+        this.updatedAt = event.getUpdatedAt();
 
         for (OrderItemDto item : this.items) {
             ReserveProductCommand reserveProductCommand = ReserveProductCommand.builder()
@@ -105,7 +134,18 @@ public class CreateOrderSaga {
                     .quantity(item.getQuantity())
                     .price(item.getPrice())
                     .build();
-            commandGateway.send(reserveProductCommand);
+            commandGateway.send(
+                    reserveProductCommand,
+                    (commandMessage, commandResultMessage) -> {
+                        if (commandResultMessage.isExceptional()) {
+                            Throwable exception = commandResultMessage.exceptionResult();
+                            log.error("[Saga] Failed to dispatch ReserveProductCommand for product {}: {}", item.getProductId(), exception.getMessage());
+                            message = "Product reservation dispatch failed: " + exception.getMessage();
+                            failedProducts.add(item.getProductId());
+                            checkReservationCompletion();
+                        }
+                    }
+            );
         }
     }
 
@@ -113,13 +153,6 @@ public class CreateOrderSaga {
     public void on(ProductReservedEvent event) {
         log.info("[Saga] Received ProductReservedEvent for productId {}", event.getProductId());
         this.reservedProducts.put(event.getProductId(), event.getQuantity());
-        checkReservationCompletion();
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    public void on(ProductReservationFailedEvent event) {
-        log.info("[Saga] Received ProductReservationFailedEvent for productId {}", event.getProductId());
-        this.failedProducts.add(event.getProductId());
         checkReservationCompletion();
     }
 
@@ -133,18 +166,12 @@ public class CreateOrderSaga {
         if (!this.failedProducts.isEmpty()) {
             log.warn("[Saga] One or more products failed to reserve. Triggering compensation...");
             releaseAllReservedProducts();
-            cancelOrder("One or more products failed to reserve");
         } else {
-            log.info("[Saga] All products reserved. Triggering payment...");
-            InitiatePaymentCommand initiatePaymentCommand = InitiatePaymentCommand.builder()
-                    .paymentId(UUID.randomUUID())
-                    .orderId(this.orderId)
-                    .customerId(this.customerId)
-                    .totalAmount(calculateTotalAmount())
-                    .build();
-            commandGateway.send(initiatePaymentCommand);
+            log.info("[Saga] All products reserved.");
+            this.totalAmount = calculateTotalAmount();
         }
     }
+
 
     private BigDecimal calculateTotalAmount() {
         return this.items.stream()
@@ -165,27 +192,57 @@ public class CreateOrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(PaymentInitiatedEvent event) {
         log.info("[Saga] Received PaymentInitiatedEvent for paymentId {}", event.getPaymentId());
-        this.paymentId = event.getPaymentId();
-        this.paymentStatus = event.getPaymentStatus();
-        this.updatedAt = event.getUpdatedAt();
-
-        UpdatePaymentStatusCommand updatePaymentStatusCommand = UpdatePaymentStatusCommand.builder()
-                .orderId(orderId)
-                .paymentId(paymentId)
-                .paymentStatus(paymentStatus)
-                .message("Payment initiated")
-                .updatedAt(updatedAt)
-                .customerName(customerName)
-                .customerEmail(customerEmail)
-                .build();
-        commandGateway.send(updatePaymentStatusCommand);
-
+        if (!event.getCustomerId().equals(this.customerId)) {
+            FailPaymentCommand failPaymentCommand = FailPaymentCommand.builder()
+                    .orderId(orderId)
+                    .message("Payment is mismatching customer ID for this order")
+                    .build();
+            commandGateway.send(failPaymentCommand);
+        } else if (!event.getTotalAmount().equals(this.totalAmount)) {
+            FailPaymentCommand failPaymentCommand = FailPaymentCommand.builder()
+                    .orderId(orderId)
+                    .message("Payment is mismatching total amount for this order")
+                    .build();
+            commandGateway.send(failPaymentCommand);
+        } else {
+            this.paymentId = event.getPaymentId();
+            ProcessPaymentCommand processPaymentCommand = ProcessPaymentCommand.builder()
+                    .paymentId(event.getPaymentId())
+                    .orderId(event.getOrderId())
+                    .customerId(event.getCustomerId())
+                    .totalAmount(event.getTotalAmount())
+                    .build();
+            commandGateway.send(processPaymentCommand, (commandMessage, commandResultMessage) -> {
+                if (commandResultMessage.isExceptional()) {
+                    Throwable exception = commandResultMessage.exceptionResult();
+                    log.error("[Saga] Failed to dispatch ProcessPaymentCommand for paymentId {}: {}", event.getPaymentId(), exception.getMessage());
+                    message = "Payment processing dispatch failed: " + exception.getMessage();
+                    FailPaymentCommand failPaymentCommand = FailPaymentCommand.builder()
+                            .orderId(orderId)
+                            .message(message)
+                            .build();
+                    commandGateway.send(failPaymentCommand);
+                }
+            });
+        }
     }
 
-    @SagaEventHandler(associationProperty = "orderId")
-    @EndSaga
-    public void on(OrderCancelledEvent event) {
-        log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
+    private void cancelPayment(String message) {
+        CancelPaymentCommand cancelPaymentCommand = CancelPaymentCommand.builder()
+                .paymentId(paymentId)
+                .orderId(orderId)
+                .customerId(customerId)
+                .amount(totalAmount)
+                .message(message)
+                .build();
+        commandGateway.send(cancelPaymentCommand);
+    }
+
+    private void on(PaymentCancelledEvent event) {
+        log.info("[Saga] Received PaymentCancelledEvent for paymentId {}", event.getPaymentId());
+        this.paymentStatus = event.getPaymentStatus();
+        this.updatedAt = event.getCancelledAt();
+        releaseAllReservedProducts();
     }
 
     private void cancelOrder(String message) {
@@ -198,6 +255,12 @@ public class CreateOrderSaga {
                     .build();
             commandGateway.send(cancelOrderCommand);
         }
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    @EndSaga
+    public void on(OrderCancelledEvent event) {
+        log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -215,7 +278,17 @@ public class CreateOrderSaga {
                 .customerName(customerName)
                 .customerEmail(customerEmail)
                 .build();
-        commandGateway.send(updatePaymentStatusCommand);
+        commandGateway.send(
+                updatePaymentStatusCommand,
+                (commandMessage, commandResultMessage) -> {
+                    if (commandResultMessage.isExceptional()) {
+                        Throwable exception = commandResultMessage.exceptionResult();
+                        log.error("[Saga] Failed to dispatch UpdatePaymentStatusCommand: {}", exception.getMessage());
+                        message = "Payment status update dispatch failed: " + exception.getMessage();
+                        cancelPayment(message);
+                    }
+                }
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -223,39 +296,55 @@ public class CreateOrderSaga {
         log.info("[Saga] Received PaymentStatusUpdatedEvent for paymentId {}, status: {}", event.getPaymentId(), event.getPaymentStatus());
         this.paymentStatus = event.getPaymentStatus();
         this.updatedAt = event.getUpdatedAt();
-
-        if (event.getPaymentStatus() == PaymentStatus.COMPLETED) {
-            InitiateShippingCommand initiateShippingCommand = InitiateShippingCommand.builder()
-                    .shippingId(UUID.randomUUID())
-                    .orderId(orderId)
-                    .customerId(customerId)
-                    .address(address)
-                    .city(city)
-                    .state(state)
-                    .zipCode(zipCode)
-                    .customerName(customerName)
-                    .customerEmail(customerEmail)
-                    .build();
-            commandGateway.send(initiateShippingCommand);
-        }
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     public void on(ShippingInitiatedEvent event) {
         log.info("[Saga] Received ShippingInitiatedEvent for shippingId {}", event.getShippingId());
-        this.shippingId = event.getShippingId();
-        this.shippingStatus = event.getShippingStatus();
-        this.updatedAt = event.getUpdatedAt();
+        if (this.paymentStatus != PaymentStatus.COMPLETED) {
+            FailShippingCommand failShippingCommand = FailShippingCommand.builder()
+                    .orderId(event.getOrderId())
+                    .shippingId(event.getShippingId())
+                    .message("Payment is not completed")
+                    .build();
+            commandGateway.send(failShippingCommand);
+        }
+        else {
+            this.shippingId = event.getShippingId();
+            this.shippingDetails = event.getShippingDetails();
 
-        UpdateShippingStatusCommand updateShippingStatusCommand = UpdateShippingStatusCommand.builder()
-                .orderId(orderId)
+            ProcessShippingCommand processShippingCommand = ProcessShippingCommand.builder()
+                    .shippingId(event.getShippingId())
+                    .orderId(event.getOrderId())
+                    .shippingDetails(event.getShippingDetails())
+                    .build();
+            commandGateway.send(
+                    processShippingCommand,
+                    (commandMessage, commandResultMessage) -> {
+                        if (commandResultMessage.isExceptional()) {
+                            Throwable exception = commandResultMessage.exceptionResult();
+                            log.error("[Saga] Failed to dispatch ProcessShippingCommand: {}", exception.getMessage());
+                            message = "Shipping dispatch failed: " + exception.getMessage();
+                            FailShippingCommand failShippingCommand = FailShippingCommand.builder()
+                                    .orderId(event.getOrderId())
+                                    .shippingId(event.getShippingId())
+                                    .message(message)
+                                    .build();
+                            commandGateway.send(failShippingCommand);
+                        }
+                    }
+            );
+        }
+    }
+
+
+    private void cancelShipping() {
+        CancelShippingCommand cancelShippingCommand = CancelShippingCommand.builder()
                 .shippingId(shippingId)
-                .shippingStatus(shippingStatus)
-                .message("Shipping initiated")
-                .updatedAt(updatedAt)
+                .orderId(orderId)
+                .message(message)
                 .build();
-
-        commandGateway.send(updateShippingStatusCommand);
+        commandGateway.send(cancelShippingCommand);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -272,7 +361,17 @@ public class CreateOrderSaga {
                 .updatedAt(updatedAt)
                 .build();
 
-        commandGateway.send(updateShippingStatusCommand);
+        commandGateway.send(
+                updateShippingStatusCommand,
+                (commandMessage, commandResultMessage) -> {
+                    if (commandResultMessage.isExceptional()) {
+                        Throwable exception = commandResultMessage.exceptionResult();
+                        log.error("[Saga] Failed to dispatch UpdateShippingStatusCommand: {}", exception.getMessage());
+                        message = "Shipping status update dispatch failed: " + exception.getMessage();
+                        cancelShipping();
+                    }
+                }
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -291,23 +390,27 @@ public class CreateOrderSaga {
         CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
                 .orderId(orderId)
                 .orderStatus(OrderStatus.COMPLETED)
-                .shippingStatus(ShippingStatus.DELIVERED)
-                .paymentStatus(PaymentStatus.COMPLETED)
                 .build();
-        commandGateway.send(completeOrderCommand);
+        commandGateway.send(
+                completeOrderCommand,
+                (commandMessage, commandResultMessage) -> {
+                    if (commandResultMessage.isExceptional()) {
+                        Throwable exception = commandResultMessage.exceptionResult();
+                        log.error("[Saga] Failed to dispatch CompleteOrderCommand: {}", exception.getMessage());
+                        message = "Order completion dispatch failed: " + exception.getMessage();
+                        cancelShipping();
+                    }
+                }
+        );
     }
 
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderCompletedEvent event) {
         log.info("[Saga] Received OrderCompletedEvent for orderId {}", event.getOrderId());
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    public void on(PaymentFailedEvent event) {
-        log.info("[Saga] Received PaymentFailedEvent for paymentId {}", event.getPaymentId());
-        releaseAllReservedProducts();
-        cancelOrder("Payment failed");
+        this.orderStatus = event.getOrderStatus();
+        this.message = event.getMessage();
+        this.updatedAt = event.getCompletedAt();
     }
 
     private void releaseAllReservedProducts() {

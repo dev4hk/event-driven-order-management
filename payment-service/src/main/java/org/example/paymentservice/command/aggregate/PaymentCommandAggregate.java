@@ -7,11 +7,9 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.commands.CancelPaymentCommand;
-import org.example.common.commands.InitiatePaymentCommand;
 import org.example.common.commands.ProcessPaymentCommand;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.events.PaymentCancelledEvent;
-import org.example.common.events.PaymentInitiatedEvent;
 import org.example.common.events.PaymentProcessedEvent;
 import org.example.paymentservice.exception.InvalidPaymentStateException;
 import org.springframework.beans.BeanUtils;
@@ -28,44 +26,34 @@ public class PaymentCommandAggregate {
     private UUID paymentId;
     private UUID orderId;
     private UUID customerId;
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
     private PaymentStatus paymentStatus;
     private String message;
     private LocalDateTime updatedAt;
 
-    private String customerName;
-    private String customerEmail;
-    private String address;
-    private String city;
-    private String state;
-    private String zipCode;
-
     @CommandHandler
-    public PaymentCommandAggregate(InitiatePaymentCommand command) {
-        PaymentInitiatedEvent event = new PaymentInitiatedEvent();
-        BeanUtils.copyProperties(command, event);
-        event.setPaymentStatus(PaymentStatus.INITIATED);
-        event.setUpdatedAt(LocalDateTime.now());
-        event.setMessage("Payment initiated");
+    public PaymentCommandAggregate(ProcessPaymentCommand command) {
+        PaymentProcessedEvent event = PaymentProcessedEvent.builder()
+                .paymentId(command.getPaymentId())
+                .orderId(command.getOrderId())
+                .customerId(command.getCustomerId())
+                .totalAmount(command.getTotalAmount())
+                .paymentStatus(PaymentStatus.COMPLETED)
+                .message("Payment processed")
+                .updatedAt(LocalDateTime.now())
+                .build();
         AggregateLifecycle.apply(event);
-
     }
 
     @EventSourcingHandler
-    public void on(PaymentInitiatedEvent event) {
+    public void on(PaymentProcessedEvent event) {
         this.paymentId = event.getPaymentId();
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
-        this.amount = event.getTotalAmount();
+        this.totalAmount = event.getTotalAmount();
         this.paymentStatus = event.getPaymentStatus();
-        this.updatedAt = event.getUpdatedAt();
-        this.customerName = event.getCustomerName();
-        this.customerEmail = event.getCustomerEmail();
-        this.address = event.getAddress();
-        this.city = event.getCity();
-        this.state = event.getState();
-        this.zipCode = event.getZipCode();
         this.message = event.getMessage();
+        this.updatedAt = event.getUpdatedAt();
     }
 
     @CommandHandler
@@ -85,34 +73,9 @@ public class PaymentCommandAggregate {
         this.paymentId = event.getPaymentId();
         this.orderId = event.getOrderId();
         this.customerId = event.getCustomerId();
-        this.amount = event.getAmount();
+        this.totalAmount = event.getAmount();
         this.paymentStatus = event.getPaymentStatus();
         this.message = event.getMessage();
         this.updatedAt = event.getCancelledAt();
     }
-
-    @CommandHandler
-    public void handle(ProcessPaymentCommand command) {
-        PaymentProcessedEvent event = PaymentProcessedEvent.builder()
-                .paymentId(command.getPaymentId())
-                .orderId(command.getOrderId())
-                .customerId(command.getCustomerId())
-                .totalAmount(command.getTotalAmount())
-                .paymentStatus(PaymentStatus.COMPLETED)
-                .message("Payment processed")
-                .updatedAt(LocalDateTime.now())
-                .build();
-        AggregateLifecycle.apply(event);
-    }
-
-    @EventSourcingHandler
-    public void on(PaymentProcessedEvent event) {
-        this.paymentId = event.getPaymentId();
-        this.orderId = event.getOrderId();
-        this.customerId = event.getCustomerId();
-        this.amount = event.getTotalAmount();
-        this.paymentStatus = event.getPaymentStatus();
-        this.updatedAt = event.getUpdatedAt();
-    }
-
 }

@@ -14,17 +14,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InitiatePaymentCommand {
-
-    @TargetAggregateIdentifier
     private UUID paymentId;
     private UUID orderId;
     private UUID customerId;
     private BigDecimal totalAmount;
-
-    private String customerName;
-    private String customerEmail;
-    private String address;
-    private String city;
-    private String state;
-    private String zipCode;
 }

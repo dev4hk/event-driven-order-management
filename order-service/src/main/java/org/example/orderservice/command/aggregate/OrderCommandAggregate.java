@@ -46,6 +46,7 @@ public class OrderCommandAggregate {
         BeanUtils.copyProperties(command, event);
         event.setOrderStatus(OrderStatus.INITIATED);
         event.setCreatedAt(LocalDateTime.now());
+        event.setMessage("Order has been initiated.");
         AggregateLifecycle.apply(event);
     }
 
@@ -57,6 +58,7 @@ public class OrderCommandAggregate {
         this.totalAmount = event.getTotalAmount();
         this.orderStatus = event.getOrderStatus();
         this.updatedAt = event.getCreatedAt();
+        this.message = event.getMessage();
     }
 
     @CommandHandler
@@ -88,6 +90,7 @@ public class OrderCommandAggregate {
         }
         OrderCompletedEvent event = new OrderCompletedEvent();
         BeanUtils.copyProperties(command, event);
+        event.setMessage("Order Completed");
         event.setCompletedAt(LocalDateTime.now());
         AggregateLifecycle.apply(event);
     }
@@ -95,8 +98,7 @@ public class OrderCommandAggregate {
     @EventSourcingHandler
     public void on(OrderCompletedEvent event) {
         this.orderStatus = event.getOrderStatus();
-        this.paymentStatus = event.getPaymentStatus();
-        this.shippingStatus = event.getShippingStatus();
+        this.message = event.getMessage();
         this.updatedAt = event.getCompletedAt();
     }
 
@@ -159,6 +161,23 @@ public class OrderCommandAggregate {
     @EventSourcingHandler
     public void on(ShippingStatusUpdatedEvent event) {
         this.shippingStatus = event.getShippingStatus();
+        this.message = event.getMessage();
+        this.updatedAt = event.getUpdatedAt();
+    }
+
+    @CommandHandler
+    public void handle(UpdateCustomerInfoCommand command) {
+        CustomerInfoUpdatedEvent event = new CustomerInfoUpdatedEvent();
+        BeanUtils.copyProperties(command, event);
+        event.setMessage("Customer info has been updated.");
+        event.setUpdatedAt(LocalDateTime.now());
+        AggregateLifecycle.apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerInfoUpdatedEvent event) {
+        this.customerName = event.getCustomerName();
+        this.customerEmail = event.getCustomerEmail();
         this.message = event.getMessage();
         this.updatedAt = event.getUpdatedAt();
     }

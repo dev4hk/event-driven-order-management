@@ -23,6 +23,4 @@ public class CompleteOrderCommand {
     @TargetAggregateIdentifier
     private UUID orderId;
     private OrderStatus orderStatus;
-    private PaymentStatus paymentStatus;
-    private ShippingStatus shippingStatus;
 }

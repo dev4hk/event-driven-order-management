@@ -1,11 +1,11 @@
-package org.example.shippingservice.command;
+package org.example.common.commands;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
-import org.example.common.constants.ShippingStatus;
+import org.example.common.dto.ShippingDetails;
 
 import java.util.UUID;
 
@@ -16,4 +16,6 @@ import java.util.UUID;
 public class ProcessShippingCommand {
     @TargetAggregateIdentifier
     private UUID shippingId;
+    private UUID orderId;
+    private ShippingDetails shippingDetails;
 }
