@@ -24,6 +24,8 @@ public class OrderProjection {
     public void on(OrderInitiatedEvent event) {
         Order order = new Order();
         BeanUtils.copyProperties(event, order);
+        List<OrderItem> items = OrderMapper.toEntityList(event.getItems());
+        order.setItems(items);
         iOrderService.createOrder(order);
     }
 
