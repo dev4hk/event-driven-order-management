@@ -12,7 +12,7 @@ import org.example.common.exception.ResourceNotFoundException;
 import org.example.orderservice.command.*;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.exception.InvalidOrderDataException;
-import org.example.orderservice.exception.OrderLifecycleViolationException;
+import org.example.orderservice.exception.InvalidOrderStateException;
 import org.example.orderservice.mapper.OrderMapper;
 import org.example.orderservice.repository.OrderRepository;
 import org.springframework.stereotype.Component;
@@ -78,13 +78,13 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         Order existingOrder = getExistingOrder(command.getOrderId());
 
         if (existingOrder.getOrderStatus() == OrderStatus.CANCELLED) {
-            throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already cancelled.");
+            throw new InvalidOrderStateException("Order with ID " + command.getOrderId() + " is already cancelled.");
         }
 
         if (existingOrder.getOrderStatus() == OrderStatus.COMPLETED) {
             ShippingStatus shippingStatus = existingOrder.getShippingStatus();
             if (shippingStatus.equals(ShippingStatus.SHIPPED) || shippingStatus.equals(ShippingStatus.DELIVERED) || shippingStatus.equals(ShippingStatus.CANCELLED)) {
-                throw new OrderLifecycleViolationException("Cannot cancel a completed or delivered or cancelled order with ID: " + command.getOrderId());
+                throw new InvalidOrderStateException("Cannot cancel a completed or delivered or cancelled order with ID: " + command.getOrderId());
             }
         }
     }
@@ -106,7 +106,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         Order existingOrder = getExistingOrder(command.getOrderId());
 
         if (existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
-            throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already cancelled.");
+            throw new InvalidOrderStateException("Order with ID " + command.getOrderId() + " is already cancelled.");
         }
 
         command.setPaymentId(existingOrder.getPaymentId());
@@ -125,7 +125,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         Order existingOrder = getExistingOrder(command.getOrderId());
 
         if (existingOrder.getOrderStatus().equals(OrderStatus.COMPLETED) || existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
-            throw new OrderLifecycleViolationException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
+            throw new InvalidOrderStateException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
         }
     }
 

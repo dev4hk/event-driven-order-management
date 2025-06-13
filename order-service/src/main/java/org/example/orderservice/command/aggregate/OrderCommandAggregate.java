@@ -13,7 +13,7 @@ import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.*;
-import org.example.orderservice.exception.OrderLifecycleViolationException;
+import org.example.orderservice.exception.InvalidOrderStateException;
 import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
@@ -64,7 +64,7 @@ public class OrderCommandAggregate {
     @CommandHandler
     public void handle(CancelOrderCommand command) {
         if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new OrderLifecycleViolationException("Order is already cancelled.");
+            throw new InvalidOrderStateException("Order is already cancelled.");
         }
         OrderCancelledEvent event = new OrderCancelledEvent();
         BeanUtils.copyProperties(command, event);
@@ -83,10 +83,10 @@ public class OrderCommandAggregate {
     @CommandHandler
     public void handle(CompleteOrderCommand command) {
         if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new OrderLifecycleViolationException("Cannot complete a cancelled order.");
+            throw new InvalidOrderStateException("Cannot complete a cancelled order.");
         }
         if (this.orderStatus == OrderStatus.COMPLETED) {
-            throw new OrderLifecycleViolationException("Order is already completed.");
+            throw new InvalidOrderStateException("Order is already completed.");
         }
         OrderCompletedEvent event = new OrderCompletedEvent();
         BeanUtils.copyProperties(command, event);
@@ -105,7 +105,7 @@ public class OrderCommandAggregate {
     @CommandHandler
     public void handle(RequestOrderCancellationCommand command) {
         if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new OrderLifecycleViolationException("Order is already cancelled.");
+            throw new InvalidOrderStateException("Order is already cancelled.");
         }
 
         OrderCancellationRequestedEvent event = new OrderCancellationRequestedEvent();

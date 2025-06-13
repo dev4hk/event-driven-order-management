@@ -25,8 +25,8 @@ public class OrderExceptionHandler extends GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(OrderLifecycleViolationException.class)
-    public ResponseEntity<ErrorResponseDto> handleAllExceptions(OrderLifecycleViolationException ex, WebRequest request) {
+    @ExceptionHandler(InvalidOrderStateException.class)
+    public ResponseEntity<ErrorResponseDto> handleAllExceptions(InvalidOrderStateException ex, WebRequest request) {
         ErrorResponseDto errorResponse = ErrorResponseDto.builder()
                 .path(request.getDescription(false))
                 .status(HttpStatus.BAD_REQUEST)
