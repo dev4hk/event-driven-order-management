@@ -39,8 +39,6 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
                 validateCreateOrder((InitiateOrderCommand) payload);
             } else if (payload instanceof CancelOrderCommand) {
                 validateCancelOrder((CancelOrderCommand) payload);
-            } else if (payload instanceof CompleteOrderCommand) {
-                validateCompleteOrder((CompleteOrderCommand) payload);
             } else if (payload instanceof RequestOrderCancellationCommand) {
                 validateRequestOrderCancellation((RequestOrderCancellationCommand) payload);
             } else if (payload instanceof UpdatePaymentStatusCommand) {
@@ -87,16 +85,6 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
                 throw new InvalidOrderStateException("Cannot cancel a completed or delivered or cancelled order with ID: " + command.getOrderId());
             }
         }
-    }
-
-    private void validateCompleteOrder(CompleteOrderCommand command) {
-
-        if (command.getOrderId() == null || command.getOrderStatus() == null) {
-            throw new InvalidOrderDataException("Order ID, Customer ID, Payment ID, Shipping ID, Order Status, Payment Status, Shipping Status, Customer Name and Customer Email must not be null.");
-        }
-
-        Order existingOrder = getExistingOrder(command.getOrderId());
-
     }
 
     private void validateRequestOrderCancellation(RequestOrderCancellationCommand command) {

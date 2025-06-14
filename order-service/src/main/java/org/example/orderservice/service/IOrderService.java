@@ -17,22 +17,6 @@ public interface IOrderService {
     void deleteOrder(UUID orderId);
     List<Order> getAllOrders();
     Order getOrderById(UUID orderId);
-    void updateOrderStatus(
-            UUID orderId,
-            UUID customerId,
-            UUID paymentId,
-            UUID shippingId,
-            BigDecimal totalAmount,
-            OrderStatus orderStatus,
-            PaymentStatus paymentStatus,
-            ShippingStatus shippingStatus,
-            LocalDateTime updatedAt,
-            String customerName,
-            String customerEmail,
-            List<OrderItem> items
-    );
-
-    void updateOrderStatus(UUID orderId, OrderStatus status, String message, LocalDateTime updatedAt);
 
     void cancelOrder(UUID orderId, OrderStatus status, String message, LocalDateTime cancelledAt);
 

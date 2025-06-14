@@ -81,28 +81,6 @@ public class OrderCommandAggregate {
     }
 
     @CommandHandler
-    public void handle(CompleteOrderCommand command) {
-        if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new InvalidOrderStateException("Cannot complete a cancelled order.");
-        }
-        if (this.orderStatus == OrderStatus.COMPLETED) {
-            throw new InvalidOrderStateException("Order is already completed.");
-        }
-        OrderCompletedEvent event = new OrderCompletedEvent();
-        BeanUtils.copyProperties(command, event);
-        event.setMessage("Order Completed");
-        event.setCompletedAt(LocalDateTime.now());
-        AggregateLifecycle.apply(event);
-    }
-
-    @EventSourcingHandler
-    public void on(OrderCompletedEvent event) {
-        this.orderStatus = event.getOrderStatus();
-        this.message = event.getMessage();
-        this.updatedAt = event.getCompletedAt();
-    }
-
-    @CommandHandler
     public void handle(RequestOrderCancellationCommand command) {
         if (this.orderStatus == OrderStatus.CANCELLED) {
             throw new InvalidOrderStateException("Order is already cancelled.");
@@ -161,6 +139,9 @@ public class OrderCommandAggregate {
     @EventSourcingHandler
     public void on(ShippingStatusUpdatedEvent event) {
         this.shippingStatus = event.getShippingStatus();
+        if(event.getShippingStatus() == ShippingStatus.DELIVERED) {
+            this.orderStatus = OrderStatus.COMPLETED;
+        }
         this.message = event.getMessage();
         this.updatedAt = event.getUpdatedAt();
     }

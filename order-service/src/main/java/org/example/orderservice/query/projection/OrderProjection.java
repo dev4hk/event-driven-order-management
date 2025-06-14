@@ -54,16 +54,6 @@ public class OrderProjection {
     }
 
     @EventHandler
-    public void on(OrderCompletedEvent event) {
-        iOrderService.updateOrderStatus(
-                event.getOrderId(),
-                event.getOrderStatus(),
-                event.getMessage(),
-                event.getCompletedAt()
-        );
-    }
-
-    @EventHandler
     public void on(OrderCancelledEvent event) {
         iOrderService.cancelOrder(event.getOrderId(), event.getOrderStatus(), event.getMessage(), event.getCancelledAt());
     }

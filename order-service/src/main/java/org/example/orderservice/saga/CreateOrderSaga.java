@@ -7,6 +7,7 @@ import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
+import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.example.common.commands.*;
@@ -17,7 +18,6 @@ import org.example.common.dto.OrderItemDto;
 import org.example.common.dto.ShippingDetails;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
-import org.example.orderservice.command.CompleteOrderCommand;
 import org.example.orderservice.command.UpdateCustomerInfoCommand;
 import org.example.orderservice.command.UpdateShippingStatusCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -382,17 +382,28 @@ public class CreateOrderSaga {
         );
         this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
+
+        if(event.getShippingStatus() == ShippingStatus.DELIVERED) {
+            log.info("[Saga] Shipping delivered for shippingId {}, order is now completed", event.getShippingId());
+            this.orderStatus = OrderStatus.COMPLETED;
+            SagaLifecycle.end();
+        }
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     public void on(ShippingDeliveredEvent event) {
         log.info("[Saga] Received ShippingDeliveredEvent for shippingId {}", event.getShippingId());
-        CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
+
+        UpdateShippingStatusCommand updateShippingStatusCommand = UpdateShippingStatusCommand.builder()
                 .orderId(orderId)
-                .orderStatus(OrderStatus.COMPLETED)
+                .shippingId(shippingId)
+                .shippingStatus(event.getShippingStatus())
+                .message("Shipping delivered, order completed")
+                .updatedAt(updatedAt)
                 .build();
+
         commandGateway.send(
-                completeOrderCommand,
+                updateShippingStatusCommand,
                 (commandMessage, commandResultMessage) -> {
                     if (commandResultMessage.isExceptional()) {
                         Throwable exception = commandResultMessage.exceptionResult();
@@ -402,15 +413,6 @@ public class CreateOrderSaga {
                     }
                 }
         );
-    }
-
-    @EndSaga
-    @SagaEventHandler(associationProperty = "orderId")
-    public void on(OrderCompletedEvent event) {
-        log.info("[Saga] Received OrderCompletedEvent for orderId {}", event.getOrderId());
-        this.orderStatus = event.getOrderStatus();
-        this.message = event.getMessage();
-        this.updatedAt = event.getCompletedAt();
     }
 
     private void releaseAllReservedProducts() {
@@ -437,6 +439,12 @@ public class CreateOrderSaga {
                 }
             });
         });
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void on(OrderCancellationRequestedEvent event) {
+        log.info("[Saga] Cancellation has been requested for orderId {}. The CreateOrderSaga will now terminate.", event.getOrderId());
     }
 
 }

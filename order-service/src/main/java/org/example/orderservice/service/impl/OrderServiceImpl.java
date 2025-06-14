@@ -56,62 +56,6 @@ public class OrderServiceImpl implements IOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
     }
 
-
-    @Override
-    @Transactional
-    public void updateOrderStatus(
-            UUID orderId, UUID customerId,
-            UUID paymentId, UUID shippingId,
-            BigDecimal totalAmount,
-            OrderStatus orderStatus,
-            PaymentStatus paymentStatus,
-            ShippingStatus shippingStatus,
-            LocalDateTime updatedAt,
-            String customerName,
-            String customerEmail,
-            List<OrderItem> items
-    ) {
-        Order existingOrder = getOrderById(orderId);
-
-        existingOrder.setCustomerId(customerId);
-        existingOrder.setPaymentId(paymentId);
-        existingOrder.setShippingId(shippingId);
-        existingOrder.setTotalAmount(totalAmount);
-        existingOrder.setOrderStatus(orderStatus);
-        existingOrder.setPaymentStatus(paymentStatus);
-        existingOrder.setShippingStatus(shippingStatus);
-        existingOrder.setUpdatedAt(updatedAt);
-        existingOrder.setCustomerName(customerName);
-        existingOrder.setCustomerEmail(customerEmail);
-
-        if (existingOrder.getItems() == null) {
-            existingOrder.setItems(new ArrayList<>());
-        } else {
-            existingOrder.getItems().clear();
-        }
-
-        if (items != null) {
-            for (OrderItem newItem : items) {
-                newItem.setOrder(existingOrder);
-                existingOrder.getItems().add(newItem);
-            }
-        }
-
-        orderRepository.save(existingOrder);
-    }
-
-    @Override
-    public void updateOrderStatus(UUID orderId, OrderStatus status, String message, LocalDateTime updatedAt) {
-        if(orderId == null) {
-            throw new ResourceNotFoundException("Order ID must not be null.");
-        }
-        Order existingOrder = getOrderById(orderId);
-        existingOrder.setOrderStatus(status);
-        existingOrder.setMessage(message);
-        existingOrder.setUpdatedAt(updatedAt);
-        orderRepository.save(existingOrder);
-    }
-
     @Override
     public void cancelOrder(UUID orderId, OrderStatus status, String reason, LocalDateTime cancelledAt) {
         Order existingOrder = getOrderById(orderId);
@@ -153,6 +97,9 @@ public class OrderServiceImpl implements IOrderService {
             throw new ResourceNotFoundException("Order with this shipping ID does not exist: " + shippingId);
         }
         existingOrder.setShippingStatus(status);
+        if(status.equals(ShippingStatus.DELIVERED)) {
+            existingOrder.setOrderStatus(OrderStatus.COMPLETED);
+        }
         existingOrder.setUpdatedAt(updatedAt);
         existingOrder.setMessage(message);
         orderRepository.save(existingOrder);
