@@ -1,11 +1,9 @@
-package org.example.shippingservice.command;
+package org.example.shippingservice.command.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventhandling.gateway.EventGateway;
-import org.example.common.commands.FailShippingCommand;
 import org.example.common.commands.InitiateShippingCommand;
-import org.example.common.events.ShippingFailedEvent;
 import org.example.common.events.ShippingInitiatedEvent;
 import org.springframework.stereotype.Component;
 

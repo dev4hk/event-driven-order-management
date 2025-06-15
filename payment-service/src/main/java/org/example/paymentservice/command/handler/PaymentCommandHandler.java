@@ -1,4 +1,4 @@
-package org.example.paymentservice.command.command;
+package org.example.paymentservice.command.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.axonframework.eventhandling.gateway.EventGateway;

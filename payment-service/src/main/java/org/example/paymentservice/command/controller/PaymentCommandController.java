@@ -1,4 +1,4 @@
-package org.example.paymentservice.command.command;
+package org.example.paymentservice.command.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,10 +7,8 @@ import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.queryhandling.SubscriptionQueryResult;
 import org.example.common.commands.InitiatePaymentCommand;
-import org.example.common.commands.ProcessPaymentCommand;
 import org.example.common.dto.CommonResponseDto;
 import org.example.common.query.GetPaymentByIdQuery;
-import org.example.common.query.GetShippingByIdQuery;
 import org.example.paymentservice.dto.ProcessPaymentDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping(path = "/api/payments", produces = MediaType.APPLICATION_JSON_VALUE)
