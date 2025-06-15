@@ -3,12 +3,13 @@ package org.example.shippingservice.command.interceptor;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
-import org.example.common.constants.ShippingStatus;
+import org.example.shippingservice.command.InitiateShippingCommand;
+import org.example.common.commands.ProcessShippingCommand;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;
-import org.example.shippingservice.command.CreateShippingCommand;
-import org.example.shippingservice.command.UpdateShippingStatusCommand;
-import org.example.shippingservice.exception.InvalidShippingStateException;
+import org.example.shippingservice.command.DeliverShippingCommand;
+import org.example.shippingservice.entity.Shipping;
+import org.example.shippingservice.exception.InvalidShippingDataException;
 import org.example.shippingservice.repository.ShippingRepository;
 import org.springframework.stereotype.Component;
 
@@ -25,34 +26,68 @@ public class ShippingCommandInterceptor implements MessageDispatchInterceptor<Co
     @Override
     public BiFunction<Integer, CommandMessage<?>, CommandMessage<?>> handle(List<? extends CommandMessage<?>> messages) {
         return (index, command) -> {
-
-            if (CreateShippingCommand.class.equals(command.getPayloadType())) {
-                CreateShippingCommand createCmd = (CreateShippingCommand) command.getPayload();
-
-                if (shippingRepository.existsByOrderId(createCmd.getOrderId())) {
-                    throw new ResourceAlreadyExistsException("Shipping already exists for orderId: " + createCmd.getOrderId());
-                }
-
-                if (shippingRepository.existsById(createCmd.getShippingId())) {
-                    throw new ResourceAlreadyExistsException("Shipping with ID already exists: " + createCmd.getShippingId());
-                }
+            Object payload = command.getPayload();
+            if (payload instanceof InitiateShippingCommand) {
+                validateInitiateShippingCommand((InitiateShippingCommand) payload);
             }
-
-            if (UpdateShippingStatusCommand.class.equals(command.getPayloadType())) {
-                UpdateShippingStatusCommand updateCmd = (UpdateShippingStatusCommand) command.getPayload();
-
-                var shipping = shippingRepository.findById(updateCmd.getShippingId());
-                if (shipping.isEmpty()) {
-                    throw new ResourceNotFoundException("Cannot update status. Shipping not found for ID: " + updateCmd.getShippingId());
-                }
-
-                if (shipping.get().getStatus() == ShippingStatus.DELIVERED) {
-                    throw new InvalidShippingStateException("Cannot update status of delivered shipping.");
-                }
+            if (payload instanceof ProcessShippingCommand) {
+                validateProcessShipping((ProcessShippingCommand) payload);
+            } else if (payload instanceof DeliverShippingCommand) {
+                validateDeliverShipping((DeliverShippingCommand) payload);
             }
 
             return command;
         };
     }
 
+    private Shipping getExistingShipping(UUID shippingId) {
+        return shippingRepository.findById(shippingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shipping not found for ID: " + shippingId));
+    }
+
+    private void validateInitiateShippingCommand(InitiateShippingCommand command) {
+        if (command.getShippingId() == null) {
+            throw new InvalidShippingDataException("Shipping ID must not be null.");
+        }
+        if (shippingRepository.existsById(command.getShippingId())) {
+            throw new ResourceAlreadyExistsException("Shipping with ID " + command.getShippingId() + " already exists.");
+        }
+        if (command.getOrderId() == null) {
+            throw new InvalidShippingDataException("Order ID must not be null.");
+        }
+        if (command.getShippingDetails() == null) {
+            throw new InvalidShippingDataException("Shipping details must not be null.");
+        }
+        if(
+                command.getShippingDetails().getName() == null
+                        || command.getShippingDetails().getAddress() == null
+                        || command.getShippingDetails().getCity() == null
+                        || command.getShippingDetails().getState() == null
+                        || command.getShippingDetails().getZipCode() == null
+        ) {
+            throw new InvalidShippingDataException("Shipping details must not be null.");
+        }
+    }
+
+    private void validateProcessShipping(ProcessShippingCommand command) {
+        if (command.getShippingId() == null) {
+            throw new InvalidShippingDataException("Shipping ID must not be null.");
+        }
+        if (command.getOrderId() == null) {
+            throw new InvalidShippingDataException("Order ID must not be null.");
+        }
+        if (command.getShippingDetails() == null) {
+            throw new InvalidShippingDataException("Shipping details must not be null.");
+        }
+        if (shippingRepository.existsById(command.getShippingId())) {
+            throw new ResourceAlreadyExistsException("Shipping with ID " + command.getShippingId() + " already exists.");
+        }
+    }
+
+    private void validateDeliverShipping(DeliverShippingCommand command) {
+        if (command.getShippingId() == null) {
+            throw new InvalidShippingDataException("Shipping ID must not be null for delivery.");
+        }
+        getExistingShipping(command.getShippingId());
+    }
 }

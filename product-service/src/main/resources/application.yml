@@ -4,14 +4,14 @@ spring:
   application:
     name: "product-service"
   datasource:
-    url: ${CUSTOMER_DB_URL}
+    url: ${PRODUCT_DB_URL}
     driver-class-name: "org.postgresql.Driver"
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
 
 eureka:

@@ -5,7 +5,7 @@ import org.axonframework.queryhandling.QueryHandler;
 import org.example.shippingservice.dto.ShippingResponseDto;
 import org.example.shippingservice.entity.Shipping;
 import org.example.shippingservice.query.GetAllShippingsQuery;
-import org.example.shippingservice.query.GetShippingByIdQuery;
+import org.example.common.query.GetShippingByIdQuery;
 import org.example.shippingservice.query.GetShippingByOrderIdQuery;
 import org.example.shippingservice.service.IShippingService;
 import org.springframework.stereotype.Component;
@@ -42,9 +42,7 @@ public class ShippingQueryHandler {
         return ShippingResponseDto.builder()
                 .shippingId(shipping.getShippingId())
                 .orderId(shipping.getOrderId())
-                .status(shipping.getStatus())
-                .shippedAt(shipping.getShippedAt())
-                .deliveredAt(shipping.getDeliveredAt())
+                .shippingStatus(shipping.getShippingStatus())
                 .updatedAt(shipping.getUpdatedAt())
                 .build();
     }

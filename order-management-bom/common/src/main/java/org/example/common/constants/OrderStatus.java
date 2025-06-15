@@ -1,8 +1,9 @@
 package org.example.common.constants;
 
 public enum OrderStatus {
-    CREATED,
+    INITIATED,
     UPDATED,
     CANCELLED,
-    COMPLETED
+    COMPLETED,
+    CANCELLATION_FAILED
 }

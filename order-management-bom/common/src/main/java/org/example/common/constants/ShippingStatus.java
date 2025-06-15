@@ -1,8 +1,9 @@
 package org.example.common.constants;
 
 public enum ShippingStatus {
-    PENDING,
+    INITIATED,
     SHIPPED,
     DELIVERED,
+    CANCELLED,
     FAILED
 }

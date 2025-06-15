@@ -5,12 +5,17 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.example.common.events.CustomerCreatedEvent;
-import org.example.common.events.CustomerDeletedEvent;
-import org.example.common.events.CustomerUpdatedEvent;
+import org.example.common.commands.ValidateCustomerCommand;
+import org.example.common.events.*;
+import org.example.customerservice.command.ApproveCustomerCreditCommand;
 import org.example.customerservice.command.CreateCustomerCommand;
-import org.example.customerservice.command.DeleteCustomerCommand;
+import org.example.customerservice.command.DeactivateCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
+import org.example.customerservice.events.CustomerCreatedEvent;
+import org.example.customerservice.events.CustomerCreditApprovedEvent;
+import org.example.customerservice.events.CustomerDeactivatedEvent;
+import org.example.customerservice.events.CustomerUpdatedEvent;
+import org.example.customerservice.exception.InvalidCustomerStateException;
 import org.springframework.beans.BeanUtils;
 
 import java.util.UUID;
@@ -62,14 +67,47 @@ public class CustomerAggregate {
     }
 
     @CommandHandler
-    public void handle(DeleteCustomerCommand command) {
-        CustomerDeletedEvent customerDeletedEvent = new CustomerDeletedEvent();
+    public void handle(DeactivateCustomerCommand command) {
+        CustomerDeactivatedEvent customerDeletedEvent = new CustomerDeactivatedEvent();
         BeanUtils.copyProperties(command, customerDeletedEvent);
         apply(customerDeletedEvent);
     }
 
     @EventSourcingHandler
-    public void on(CustomerDeletedEvent event) {
+    public void on(CustomerDeactivatedEvent event) {
         this.active = false;
+    }
+
+    @CommandHandler
+    public void handle(ValidateCustomerCommand command) {
+        if(!this.active) {
+            throw new InvalidCustomerStateException("Customer is not active");
+        } else if(!this.creditApproved) {
+            throw new InvalidCustomerStateException("Customer credit is not approved");
+        } else {
+            CustomerValidatedEvent customerValidatedEvent = CustomerValidatedEvent.builder()
+                    .customerId(command.getCustomerId())
+                    .orderId(command.getOrderId())
+                    .customerName(this.name)
+                    .customerEmail(this.email)
+                    .build();
+            apply(customerValidatedEvent);
+        }
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerValidatedEvent event) {
+    }
+
+    @CommandHandler
+    public void handle(ApproveCustomerCreditCommand command) {
+        CustomerCreditApprovedEvent customerCreditApprovedEvent = new CustomerCreditApprovedEvent();
+        BeanUtils.copyProperties(command, customerCreditApprovedEvent);
+        apply(customerCreditApprovedEvent);
+    }
+
+    @EventSourcingHandler
+    public void on(CustomerCreditApprovedEvent event) {
+        this.creditApproved = true;
     }
 }

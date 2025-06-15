@@ -16,9 +16,7 @@ import java.util.UUID;
 public class ShippingResponseDto {
     private UUID shippingId;
     private UUID orderId;
-    private ShippingStatus status;
-    private LocalDateTime shippedAt;
-    private LocalDateTime deliveredAt;
+    private ShippingStatus shippingStatus;
     private LocalDateTime updatedAt;
 }
 

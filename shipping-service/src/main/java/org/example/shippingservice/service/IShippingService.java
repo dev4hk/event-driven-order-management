@@ -11,6 +11,6 @@ public interface IShippingService {
     Shipping getById(UUID shippingId);
     Shipping getByOrderId(UUID orderId);
     List<Shipping> getAll();
-    void createShipping(Shipping shipping);
-    void updateShippingStatus(UUID shippingId, ShippingStatus newStatus, LocalDateTime updatedAt);
+    void processShipping(Shipping shipping);
+    void updateShippingStatus(UUID shippingId, UUID orderId, ShippingStatus newStatus, String message, LocalDateTime updatedAt);
 }

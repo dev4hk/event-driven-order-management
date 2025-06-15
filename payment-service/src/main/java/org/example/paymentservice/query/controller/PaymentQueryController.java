@@ -6,7 +6,7 @@ import org.axonframework.queryhandling.QueryGateway;
 import org.example.common.dto.CommonResponseDto;
 import org.example.paymentservice.dto.PaymentResponseDto;
 import org.example.paymentservice.query.GetAllPaymentsQuery;
-import org.example.paymentservice.query.GetPaymentByIdQuery;
+import org.example.common.query.GetPaymentByIdQuery;
 import org.example.paymentservice.query.GetPaymentsByOrderIdQuery;
 import org.springframework.web.bind.annotation.*;
 

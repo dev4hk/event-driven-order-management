@@ -21,15 +21,31 @@ public class Shipping {
     @Id
     private UUID shippingId;
 
+    @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
+    @Column(nullable = false)
+    private String address;
+
+    @Column(nullable = false)
+    private String city;
+
+    @Column(nullable = false)
+    private String state;
+
+    @Column(nullable = false)
+    private String zipCode;
+
+    @Column(nullable = false)
+    private String name;
+
     @Enumerated(EnumType.STRING)
-    private ShippingStatus status;
+    @Column(nullable = false)
+    private ShippingStatus shippingStatus;
 
-    private LocalDateTime shippedAt;
-
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    private LocalDateTime deliveredAt;
+    private String message;
 }
 

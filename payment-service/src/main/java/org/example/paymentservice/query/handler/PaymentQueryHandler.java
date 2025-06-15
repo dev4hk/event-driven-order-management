@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.queryhandling.QueryHandler;
 import org.example.paymentservice.entity.Payment;
 import org.example.paymentservice.query.GetAllPaymentsQuery;
-import org.example.paymentservice.query.GetPaymentByIdQuery;
+import org.example.common.query.GetPaymentByIdQuery;
 import org.example.paymentservice.query.GetPaymentsByOrderIdQuery;
 import org.example.paymentservice.service.IPaymentService;
 import org.springframework.stereotype.Component;

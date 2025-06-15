@@ -3,14 +3,17 @@ package org.example.orderservice.query.projection;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
-import org.example.common.events.OrderCancelledEvent;
-import org.example.common.events.OrderCompletedEvent;
-import org.example.common.events.OrderCreatedEvent;
-import org.example.common.events.OrderUpdatedEvent;
+import org.example.common.events.*;
 import org.example.orderservice.entity.Order;
+import org.example.orderservice.entity.OrderItem;
+import org.example.orderservice.events.PaymentStatusUpdatedEvent;
+import org.example.orderservice.events.ShippingStatusUpdatedEvent;
+import org.example.orderservice.mapper.OrderMapper;
 import org.example.orderservice.service.IOrderService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -20,27 +23,57 @@ public class OrderProjection {
     private final IOrderService iOrderService;
 
     @EventHandler
-    public void on(OrderCreatedEvent event) {
+    public void on(OrderInitiatedEvent event) {
         Order order = new Order();
         BeanUtils.copyProperties(event, order);
+        List<OrderItem> items = OrderMapper.toEntityList(event.getItems());
+        order.setItems(items);
         iOrderService.createOrder(order);
     }
 
     @EventHandler
-    public void on(OrderUpdatedEvent event) {
-        Order order = new Order();
-        BeanUtils.copyProperties(event, order);
-        iOrderService.updateOrder(order);
+    public void on(PaymentStatusUpdatedEvent event) {
+        iOrderService.updatePaymentStatus(
+                event.getOrderId(),
+                event.getPaymentId(),
+                event.getPaymentStatus(),
+                event.getMessage(),
+                event.getUpdatedAt()
+        );
+    }
+
+    @EventHandler
+    public void on(ShippingStatusUpdatedEvent event) {
+        iOrderService.updateShippingStatus(
+                event.getOrderId(),
+                event.getShippingId(),
+                event.getShippingStatus(),
+                event.getMessage(),
+                event.getUpdatedAt()
+        );
     }
 
     @EventHandler
     public void on(OrderCancelledEvent event) {
-        iOrderService.deleteOrder(event.getOrderId());
+        iOrderService.cancelOrder(event.getOrderId(), event.getOrderStatus(), event.getMessage(), event.getCancelledAt());
     }
 
     @EventHandler
-    public void on(OrderCompletedEvent event) {
-        iOrderService.updateOrderStatus(event.getOrderId(), event.getStatus());
+    public void on(CustomerInfoUpdatedEvent event) {
+        iOrderService.updateCustomerInfo(
+                event.getOrderId(),
+                event.getCustomerId(),
+                event.getCustomerName(),
+                event.getCustomerEmail(),
+                event.getMessage(),
+                event.getUpdatedAt()
+        );
     }
+
+    @EventHandler
+    public void on(OrderCancellationRolledBackEvent event) {
+        iOrderService.updateOrder(event.getOrderId(), event.getOrderStatus(), event.getMessage());
+    }
+
 
 }

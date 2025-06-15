@@ -5,7 +5,9 @@ import org.example.orderservice.dto.OrderResponseDto;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.entity.OrderItem;
 
+import java.util.ArrayList; // Import ArrayList
 import java.util.List;
+import java.util.stream.Collectors; // Import Collectors
 
 public class OrderMapper {
 
@@ -14,10 +16,15 @@ public class OrderMapper {
         dto.setOrderId(order.getOrderId());
         dto.setCustomerId(order.getCustomerId());
         dto.setTotalAmount(order.getTotalAmount());
-        dto.setStatus(order.getStatus().name());
-        dto.setCreatedAt(order.getCreatedAt());
+        dto.setOrderStatus(order.getOrderStatus());
+        dto.setPaymentId(order.getPaymentId());
+        dto.setShippingId(order.getShippingId());
+        dto.setUpdatedAt(order.getUpdatedAt());
 
-        List<OrderItemDto> items = order.getItems().stream().map(OrderMapper::toItemDto).toList();
+        List<OrderItemDto> items = order.getItems().stream()
+                .map(OrderMapper::toItemDto)
+                .collect(Collectors.toCollection(ArrayList::new));
+
         dto.setItems(items);
 
         return dto;
@@ -30,5 +37,30 @@ public class OrderMapper {
         dto.setQuantity(item.getQuantity());
         return dto;
     }
-}
 
+    public static OrderItem toEntity(OrderItemDto dto) {
+        return OrderItem.builder()
+                .productId(dto.getProductId())
+                .quantity(dto.getQuantity())
+                .price(dto.getPrice())
+                .build();
+    }
+
+    public static List<OrderItem> toEntityList(List<OrderItemDto> dtoList) {
+        if (dtoList == null) {
+            return new ArrayList<>();
+        }
+        return dtoList.stream()
+                .map(OrderMapper::toEntity)
+                .collect(Collectors.toList());
+    }
+
+    public static List<OrderItemDto> toDtoList(List<OrderItem> entityList) {
+        if (entityList == null) {
+            return new ArrayList<>();
+        }
+        return entityList.stream()
+                .map(OrderMapper::toItemDto)
+                .collect(Collectors.toList());
+    }
+}
