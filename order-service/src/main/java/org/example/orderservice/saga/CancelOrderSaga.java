@@ -147,7 +147,7 @@ public class CancelOrderSaga {
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderCancelledEvent event) {
-        log.info("[Saga] Received OrderCancellationCompletedEvent for orderId {}", event.getOrderId());
+        log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
     }
 
     private void rollbackPayment() {
