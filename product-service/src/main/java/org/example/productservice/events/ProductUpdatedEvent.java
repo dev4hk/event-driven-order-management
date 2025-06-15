@@ -1,4 +1,4 @@
-package org.example.common.events;
+package org.example.productservice.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

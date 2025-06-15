@@ -1,4 +1,4 @@
-package org.example.common.commands;
+package org.example.shippingservice.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

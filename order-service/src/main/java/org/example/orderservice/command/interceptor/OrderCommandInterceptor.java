@@ -3,7 +3,7 @@ package org.example.orderservice.command.interceptor;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
-import org.example.common.commands.UpdatePaymentStatusCommand;
+import org.example.orderservice.command.UpdatePaymentStatusCommand;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;

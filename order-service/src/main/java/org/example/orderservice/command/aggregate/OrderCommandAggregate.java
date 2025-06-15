@@ -6,13 +6,15 @@ import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.example.common.commands.UpdatePaymentStatusCommand;
+import org.example.orderservice.command.UpdatePaymentStatusCommand;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.*;
+import org.example.orderservice.events.PaymentStatusUpdatedEvent;
+import org.example.orderservice.events.ShippingStatusUpdatedEvent;
 import org.example.orderservice.exception.InvalidOrderDataException;
 import org.example.orderservice.exception.InvalidOrderStateException;
 import org.springframework.beans.BeanUtils;
@@ -105,21 +107,6 @@ public class OrderCommandAggregate {
 
     @EventSourcingHandler
     public void on(OrderCancellationRequestedEvent event) {
-    }
-
-    @CommandHandler
-    public void handle(CompleteOrderCancellationCommand command) {
-        OrderCancellationCompletedEvent event = new OrderCancellationCompletedEvent();
-        BeanUtils.copyProperties(command, event);
-        AggregateLifecycle.apply(event);
-    }
-
-    @EventSourcingHandler
-    public void on(OrderCancellationCompletedEvent event) {
-        this.paymentStatus = event.getPaymentStatus();
-        this.shippingStatus = event.getShippingStatus();
-        this.message = event.getMessage();
-        this.updatedAt = event.getCancelledAt();
     }
 
     @CommandHandler

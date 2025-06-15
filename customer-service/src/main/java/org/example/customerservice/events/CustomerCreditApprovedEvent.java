@@ -1,4 +1,4 @@
-package org.example.common.events;
+package org.example.customerservice.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +9,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerDeactivatedEvent {
+public class CustomerCreditApprovedEvent {
     private UUID customerId;
 }

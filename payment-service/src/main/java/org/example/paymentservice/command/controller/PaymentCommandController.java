@@ -6,7 +6,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.queryhandling.SubscriptionQueryResult;
-import org.example.common.commands.InitiatePaymentCommand;
+import org.example.paymentservice.command.InitiatePaymentCommand;
 import org.example.common.dto.CommonResponseDto;
 import org.example.common.query.GetPaymentByIdQuery;
 import org.example.paymentservice.dto.ProcessPaymentDto;

@@ -11,7 +11,10 @@ import org.example.customerservice.command.ApproveCustomerCreditCommand;
 import org.example.customerservice.command.CreateCustomerCommand;
 import org.example.customerservice.command.DeactivateCustomerCommand;
 import org.example.customerservice.command.UpdateCustomerCommand;
-import org.example.customerservice.command.events.CustomerCreditApprovedEvent;
+import org.example.customerservice.events.CustomerCreatedEvent;
+import org.example.customerservice.events.CustomerCreditApprovedEvent;
+import org.example.customerservice.events.CustomerDeactivatedEvent;
+import org.example.customerservice.events.CustomerUpdatedEvent;
 import org.example.customerservice.exception.InvalidCustomerStateException;
 import org.springframework.beans.BeanUtils;
 

@@ -9,13 +9,14 @@ import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.spring.stereotype.Saga;
 import org.example.common.commands.*;
-import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.dto.CommonResponseDto;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.RollbackCancelOrderCommand;
+import org.example.orderservice.command.UpdatePaymentStatusCommand;
+import org.example.orderservice.events.PaymentStatusUpdatedEvent;
 import org.example.orderservice.query.GetOrderByIdQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 

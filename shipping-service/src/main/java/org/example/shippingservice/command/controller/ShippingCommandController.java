@@ -6,7 +6,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.queryhandling.SubscriptionQueryResult;
-import org.example.common.commands.InitiateShippingCommand;
+import org.example.shippingservice.command.InitiateShippingCommand;
 import org.example.common.dto.CommonResponseDto;
 import org.example.shippingservice.command.DeliverShippingCommand;
 import org.example.shippingservice.dto.ProcessShippingDto;

@@ -3,7 +3,7 @@ package org.example.paymentservice.command.handler;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.eventhandling.gateway.EventGateway;
 import org.example.common.commands.FailPaymentCommand;
-import org.example.common.commands.InitiatePaymentCommand;
+import org.example.paymentservice.command.InitiatePaymentCommand;
 import org.example.common.events.PaymentFailedEvent;
 import org.example.common.events.PaymentInitiatedEvent;
 import org.springframework.beans.BeanUtils;

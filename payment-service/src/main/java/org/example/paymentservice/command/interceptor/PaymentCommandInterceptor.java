@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.commands.CancelPaymentCommand;
-import org.example.common.commands.InitiatePaymentCommand;
+import org.example.paymentservice.command.InitiatePaymentCommand;
 import org.example.common.commands.ProcessPaymentCommand;
 import org.example.common.commands.RollBackPaymentStatusCommand;
 import org.example.common.exception.ResourceAlreadyExistsException;

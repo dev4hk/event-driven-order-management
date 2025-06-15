@@ -3,7 +3,7 @@ package org.example.shippingservice.command.interceptor;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
-import org.example.common.commands.InitiateShippingCommand;
+import org.example.shippingservice.command.InitiateShippingCommand;
 import org.example.common.commands.ProcessShippingCommand;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException;

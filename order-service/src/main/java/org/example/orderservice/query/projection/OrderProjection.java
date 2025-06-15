@@ -6,6 +6,8 @@ import org.axonframework.eventhandling.EventHandler;
 import org.example.common.events.*;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.entity.OrderItem;
+import org.example.orderservice.events.PaymentStatusUpdatedEvent;
+import org.example.orderservice.events.ShippingStatusUpdatedEvent;
 import org.example.orderservice.mapper.OrderMapper;
 import org.example.orderservice.service.IOrderService;
 import org.springframework.beans.BeanUtils;
@@ -54,19 +56,6 @@ public class OrderProjection {
     @EventHandler
     public void on(OrderCancelledEvent event) {
         iOrderService.cancelOrder(event.getOrderId(), event.getOrderStatus(), event.getMessage(), event.getCancelledAt());
-    }
-
-    @EventHandler
-    public void on(OrderCancellationCompletedEvent event) {
-        List<OrderItem> items = OrderMapper.toEntityList(event.getItems());
-        iOrderService.updateOrderStatus(
-                event.getOrderId(),
-                event.getPaymentStatus(),
-                event.getShippingStatus(),
-                event.getItems(),
-                event.getMessage(),
-                event.getCancelledAt()
-        );
     }
 
     @EventHandler

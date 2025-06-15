@@ -23,7 +23,10 @@ import org.example.common.query.GetPaymentByIdQuery;
 import org.example.common.query.GetShippingByIdQuery;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.UpdateCustomerInfoCommand;
+import org.example.orderservice.command.UpdatePaymentStatusCommand;
 import org.example.orderservice.command.UpdateShippingStatusCommand;
+import org.example.orderservice.events.PaymentStatusUpdatedEvent;
+import org.example.orderservice.events.ShippingStatusUpdatedEvent;
 import org.example.orderservice.query.GetOrderByIdQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 

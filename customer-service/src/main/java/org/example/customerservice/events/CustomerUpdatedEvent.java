@@ -1,20 +1,20 @@
-package org.example.common.events;
+package org.example.customerservice.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductCreatedEvent {
-    private UUID productId;
+public class CustomerUpdatedEvent {
+
+    private UUID customerId;
     private String name;
-    private String description;
-    private BigDecimal price;
-    private int stock;
+    private String email;
     private boolean active;
+    private boolean creditApproved;
+
 }
