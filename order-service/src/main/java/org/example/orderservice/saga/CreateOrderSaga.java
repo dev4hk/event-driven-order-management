@@ -9,17 +9,22 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
+import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.spring.stereotype.Saga;
 import org.example.common.commands.*;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.constants.ShippingStatus;
+import org.example.common.dto.CommonResponseDto;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.dto.ShippingDetails;
 import org.example.common.events.*;
+import org.example.common.query.GetPaymentByIdQuery;
+import org.example.common.query.GetShippingByIdQuery;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.UpdateCustomerInfoCommand;
 import org.example.orderservice.command.UpdateShippingStatusCommand;
+import org.example.orderservice.query.GetOrderByIdQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -32,6 +37,9 @@ public class CreateOrderSaga {
 
     @Autowired
     private transient CommandGateway commandGateway;
+
+    @Autowired
+    private transient QueryUpdateEmitter queryUpdateEmitter;
 
     private UUID orderId;
     private UUID customerId;
@@ -169,6 +177,11 @@ public class CreateOrderSaga {
         } else {
             log.info("[Saga] All products reserved.");
             this.totalAmount = calculateTotalAmount();
+            queryUpdateEmitter.emit(
+                    GetOrderByIdQuery.class,
+                    query -> true,
+                    CommonResponseDto.success("Order Initiated", this.orderId)
+            );
         }
     }
 
@@ -261,6 +274,11 @@ public class CreateOrderSaga {
     @EndSaga
     public void on(OrderCancelledEvent event) {
         log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
+        queryUpdateEmitter.emit(
+                GetOrderByIdQuery.class,
+                query -> true,
+                CommonResponseDto.failure("Order failed: " + this.message)
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -293,6 +311,11 @@ public class CreateOrderSaga {
         log.info("[Saga] Received PaymentStatusUpdatedEvent for paymentId {}, status: {}", event.getPaymentId(), event.getPaymentStatus());
         this.paymentStatus = event.getPaymentStatus();
         this.updatedAt = event.getUpdatedAt();
+        queryUpdateEmitter.emit(
+                GetPaymentByIdQuery.class,
+                query -> true,
+                CommonResponseDto.success("Payment status with paymentId " + event.getPaymentId() + " updated", this.orderId)
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -305,8 +328,7 @@ public class CreateOrderSaga {
                     .message("Payment is not completed")
                     .build();
             commandGateway.send(failShippingCommand);
-        }
-        else {
+        } else {
             this.shippingId = event.getShippingId();
             this.shippingDetails = event.getShippingDetails();
 
@@ -380,10 +402,22 @@ public class CreateOrderSaga {
         this.shippingStatus = event.getShippingStatus();
         this.updatedAt = event.getUpdatedAt();
 
-        if(event.getShippingStatus() == ShippingStatus.DELIVERED) {
+        if (event.getShippingStatus() == ShippingStatus.DELIVERED) {
             log.info("[Saga] Shipping delivered for shippingId {}, order is now completed", event.getShippingId());
             this.orderStatus = OrderStatus.COMPLETED;
+            queryUpdateEmitter.emit(
+                    GetShippingByIdQuery.class,
+                    query -> true,
+                    CommonResponseDto.success("Shipping with shippingId " + event.getShippingId() + " has been delivered", this.orderId)
+            );
             SagaLifecycle.end();
+        }
+        else {
+            queryUpdateEmitter.emit(
+                    GetShippingByIdQuery.class,
+                    query -> true,
+                    CommonResponseDto.success("Shipping with shippingId " + event.getShippingId() + " has been shipped", this.orderId)
+            );
         }
     }
 

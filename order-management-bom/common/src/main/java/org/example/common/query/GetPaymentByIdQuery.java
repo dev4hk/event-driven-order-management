@@ -1,4 +1,4 @@
-package org.example.paymentservice.query;
+package org.example.common.query;
 
 import lombok.Value;
 

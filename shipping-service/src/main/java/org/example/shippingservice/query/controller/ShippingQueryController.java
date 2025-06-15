@@ -6,7 +6,7 @@ import org.axonframework.queryhandling.QueryGateway;
 import org.example.common.dto.CommonResponseDto;
 import org.example.shippingservice.dto.ShippingResponseDto;
 import org.example.shippingservice.query.GetAllShippingsQuery;
-import org.example.shippingservice.query.GetShippingByIdQuery;
+import org.example.common.query.GetShippingByIdQuery;
 import org.example.shippingservice.query.GetShippingByOrderIdQuery;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

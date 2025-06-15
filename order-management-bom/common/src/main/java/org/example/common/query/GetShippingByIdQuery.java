@@ -1,4 +1,4 @@
-package org.example.shippingservice.query;
+package org.example.common.query;
 
 import lombok.Value;
 

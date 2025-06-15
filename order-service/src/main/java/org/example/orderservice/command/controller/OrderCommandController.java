@@ -3,13 +3,17 @@ package org.example.orderservice.command.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.SubscriptionQueryResult;
 import org.example.common.dto.CommonResponseDto;
 import org.example.orderservice.command.InitiateOrderCommand;
 import org.example.orderservice.command.RequestOrderCancellationCommand;
 import org.example.orderservice.dto.CancelOrderDto;
 import org.example.orderservice.dto.CreateOrderDto;
+import org.example.orderservice.query.GetOrderByIdQuery;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +27,10 @@ import java.util.concurrent.CompletableFuture;
 public class OrderCommandController {
 
     private final CommandGateway commandGateway;
+    private final QueryGateway queryGateway;
 
     @PostMapping("/create")
-    public CompletableFuture<CommonResponseDto<String>> create(@Valid @RequestBody CreateOrderDto dto) {
+    public ResponseEntity<CommonResponseDto<?>> create(@Valid @RequestBody CreateOrderDto dto) {
         UUID orderId = UUID.randomUUID();
 
         InitiateOrderCommand command = InitiateOrderCommand.builder()
@@ -39,12 +44,28 @@ public class OrderCommandController {
                 .zipCode(dto.getZipCode())
                 .build();
 
-        return commandGateway.send(command)
-                .thenApply(result -> CommonResponseDto.success("Order created", orderId.toString()));
+        try (SubscriptionQueryResult<CommonResponseDto, CommonResponseDto> queryResult = queryGateway.subscriptionQuery(
+                new GetOrderByIdQuery(orderId),
+                ResponseTypes.instanceOf(CommonResponseDto.class),
+                ResponseTypes.instanceOf(CommonResponseDto.class)
+        )) {
+            commandGateway.send(
+                    command,
+                    (commandMessage, commandResult) -> {
+                        if (commandResult.isExceptional()) {
+                            ResponseEntity
+                                    .internalServerError()
+                                    .body(CommonResponseDto.failure("Order initialization failed: " + commandResult.exceptionResult().getMessage()));
+                        }
+                    }
+            );
+            return ResponseEntity.ok(queryResult.updates().blockFirst());
+        }
+
     }
 
     @PutMapping("/cancel")
-    public CompletableFuture<CommonResponseDto<String>> cancel(@Valid @RequestBody CancelOrderDto dto) {
+    public ResponseEntity<CommonResponseDto<?>> cancel(@Valid @RequestBody CancelOrderDto dto) {
 
         RequestOrderCancellationCommand command = RequestOrderCancellationCommand.builder()
                 .orderId(dto.getOrderId())
@@ -52,7 +73,22 @@ public class OrderCommandController {
                 .message(dto.getMessage())
                 .build();
 
-        return commandGateway.send(command)
-                .thenApply(result -> CommonResponseDto.success("Order canceled", dto.getOrderId().toString()));
+        try (SubscriptionQueryResult<CommonResponseDto, CommonResponseDto> queryResult = queryGateway.subscriptionQuery(
+                new GetOrderByIdQuery(dto.getOrderId()),
+                ResponseTypes.instanceOf(CommonResponseDto.class),
+                ResponseTypes.instanceOf(CommonResponseDto.class)
+        )) {
+            commandGateway.send(
+                    command,
+                    (commandMessage, commandResult) -> {
+                        if (commandResult.isExceptional()) {
+                            ResponseEntity
+                                    .internalServerError()
+                                    .body(CommonResponseDto.failure("Order Cancellation failed: " + commandResult.exceptionResult().getMessage()));
+                        }
+                    }
+            );
+            return ResponseEntity.ok(queryResult.updates().blockFirst());
+        }
     }
 }

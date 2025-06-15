@@ -6,14 +6,17 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
+import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.spring.stereotype.Saga;
 import org.example.common.commands.*;
 import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
+import org.example.common.dto.CommonResponseDto;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
 import org.example.orderservice.command.RollbackCancelOrderCommand;
+import org.example.orderservice.query.GetOrderByIdQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -27,6 +30,9 @@ public class CancelOrderSaga {
 
     @Autowired
     private transient CommandGateway commandGateway;
+
+    @Autowired
+    private transient QueryUpdateEmitter queryUpdateEmitter;
 
     private UUID orderId;
     private UUID customerId;
@@ -65,6 +71,11 @@ public class CancelOrderSaga {
                         log.error("[Saga] Failed to validate customer for orderId {}: {}",
                                 commandMessage.getPayload().getOrderId(),
                                 commandResult.exceptionResult().getMessage());
+                        queryUpdateEmitter.emit(
+                                GetOrderByIdQuery.class,
+                                query -> true,
+                                CommonResponseDto.failure("Failed to validate customer: " + commandResult.exceptionResult().getMessage())
+                        );
                         SagaLifecycle.end();
                     }
                 }
@@ -96,6 +107,11 @@ public class CancelOrderSaga {
                         log.error("[Saga] Failed to cancel payment for orderId {}: {}, terminating saga",
                                 commandMessage.getPayload().getOrderId(),
                                 commandResult.exceptionResult().getMessage());
+                        queryUpdateEmitter.emit(
+                                GetOrderByIdQuery.class,
+                                query -> true,
+                                CommonResponseDto.failure("Failed to cancel payment: " + commandResult.exceptionResult().getMessage())
+                        );
                         SagaLifecycle.end();
                     }
                 }
@@ -148,6 +164,11 @@ public class CancelOrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderCancelledEvent event) {
         log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
+        queryUpdateEmitter.emit(
+                GetOrderByIdQuery.class,
+                query -> true,
+                CommonResponseDto.success("Order cancelled", event.getOrderId().toString())
+        );
     }
 
     private void rollbackPayment() {
@@ -203,12 +224,17 @@ public class CancelOrderSaga {
 
     private void rollbackOrderCancellation(String reason) {
         log.info("[Saga] Rolling back order cancellation for orderId {}", orderId);
-        SagaLifecycle.end();
         RollbackCancelOrderCommand command = RollbackCancelOrderCommand.builder()
                 .orderId(orderId)
                 .message(reason)
                 .build();
         commandGateway.send(command);
+        queryUpdateEmitter.emit(
+                GetOrderByIdQuery.class,
+                query -> true,
+                CommonResponseDto.failure("Failed to cancel order, manual intervention required with reason: " + reason)
+        );
+        SagaLifecycle.end();
     }
 
 

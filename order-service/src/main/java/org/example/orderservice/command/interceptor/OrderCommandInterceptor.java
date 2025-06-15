@@ -13,7 +13,6 @@ import org.example.orderservice.command.*;
 import org.example.orderservice.entity.Order;
 import org.example.orderservice.exception.InvalidOrderDataException;
 import org.example.orderservice.exception.InvalidOrderStateException;
-import org.example.orderservice.mapper.OrderMapper;
 import org.example.orderservice.repository.OrderRepository;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +35,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
             Object payload = command.getPayload();
 
             if (payload instanceof InitiateOrderCommand) {
-                validateCreateOrder((InitiateOrderCommand) payload);
+                validateInitiateOrder((InitiateOrderCommand) payload);
             } else if (payload instanceof CancelOrderCommand) {
                 validateCancelOrder((CancelOrderCommand) payload);
             } else if (payload instanceof RequestOrderCancellationCommand) {
@@ -56,7 +55,7 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
                 .orElseThrow(() -> new ResourceNotFoundException("Order with ID " + orderId + " does not exist."));
     }
 
-    private void validateCreateOrder(InitiateOrderCommand command) {
+    private void validateInitiateOrder(InitiateOrderCommand command) {
         if (command.getOrderId() == null) {
             throw new InvalidOrderDataException("Order ID must not be null.");
         }
