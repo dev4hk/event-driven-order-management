@@ -29,9 +29,11 @@ public interface IOrderService {
             LocalDateTime cancelledAt
     );
 
-    void updatePaymentStatus(UUID orderId, UUID paymentId, PaymentStatus paymentStatus, String message, LocalDateTime updatedAt, String customerName, String customerEmail);
+    void updatePaymentStatus(UUID orderId, UUID paymentId, PaymentStatus paymentStatus, String message, LocalDateTime updatedAt);
 
     void updateShippingStatus(UUID orderId, UUID shippingId, ShippingStatus status, String message, LocalDateTime updatedAt);
 
     void updateCustomerInfo(UUID orderId, UUID customerId, String customerName, String customerEmail, String message, LocalDateTime updatedAt);
+
+    void updateOrder(UUID orderId, OrderStatus orderStatus, String message);
 }

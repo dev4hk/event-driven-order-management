@@ -8,9 +8,11 @@ import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.example.common.commands.CancelPaymentCommand;
 import org.example.common.commands.ProcessPaymentCommand;
+import org.example.common.commands.RollBackPaymentStatusCommand;
 import org.example.common.constants.PaymentStatus;
 import org.example.common.events.PaymentCancelledEvent;
 import org.example.common.events.PaymentProcessedEvent;
+import org.example.common.events.PaymentStatusRolledBackEvent;
 import org.example.paymentservice.exception.InvalidPaymentStateException;
 import org.springframework.beans.BeanUtils;
 
@@ -78,4 +80,20 @@ public class PaymentCommandAggregate {
         this.message = event.getMessage();
         this.updatedAt = event.getCancelledAt();
     }
+
+    @CommandHandler
+    public void on(RollBackPaymentStatusCommand command) {
+        PaymentStatusRolledBackEvent event = PaymentStatusRolledBackEvent.builder()
+                .paymentId(command.getPaymentId())
+                .orderId(command.getOrderId())
+                .paymentStatus(command.getPaymentStatus())
+                .build();
+        AggregateLifecycle.apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(PaymentStatusRolledBackEvent event) {
+        this.paymentStatus = event.getPaymentStatus();
+    }
+
 }

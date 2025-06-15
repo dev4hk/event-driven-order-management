@@ -7,19 +7,17 @@ import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.example.common.constants.PaymentStatus;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdatePaymentStatusCommand {
+public class RollBackPaymentStatusCommand {
 
     @TargetAggregateIdentifier
-    private UUID orderId;
     private UUID paymentId;
+    private UUID orderId;
     private PaymentStatus paymentStatus;
-    private String message;
+
 }

@@ -36,9 +36,7 @@ public class OrderProjection {
                 event.getPaymentId(),
                 event.getPaymentStatus(),
                 event.getMessage(),
-                event.getUpdatedAt(),
-                event.getCustomerName(),
-                event.getCustomerEmail()
+                event.getUpdatedAt()
         );
     }
 
@@ -82,5 +80,11 @@ public class OrderProjection {
                 event.getUpdatedAt()
         );
     }
+
+    @EventHandler
+    public void on(OrderCancellationRolledBackEvent event) {
+        iOrderService.updateOrder(event.getOrderId(), event.getOrderStatus(), event.getMessage());
+    }
+
 
 }

@@ -91,23 +91,12 @@ public class OrderCommandInterceptor implements MessageDispatchInterceptor<Comma
         if (command.getOrderId() == null || command.getCustomerId() == null) {
             throw new InvalidOrderDataException("Order ID, Customer ID must not be null.");
         }
-        Order existingOrder = getExistingOrder(command.getOrderId());
-
-        if (existingOrder.getOrderStatus().equals(OrderStatus.CANCELLED)) {
-            throw new InvalidOrderStateException("Order with ID " + command.getOrderId() + " is already cancelled.");
-        }
-
-        command.setPaymentId(existingOrder.getPaymentId());
-        command.setShippingId(existingOrder.getShippingId());
-        command.setTotalAmount(existingOrder.getTotalAmount());
-
-        List<OrderItemDto> items = OrderMapper.toDtoList(existingOrder.getItems());
-        command.setItems(items);
+        getExistingOrder(command.getOrderId());
     }
 
     private void validateUpdatePaymentStatus(UpdatePaymentStatusCommand command) {
-        if (command.getOrderId() == null || command.getPaymentStatus() == null || command.getUpdatedAt() == null) {
-            throw new InvalidOrderDataException("Order ID, Payment Status, and Updated At must not be null.");
+        if (command.getOrderId() == null || command.getPaymentId() == null || command.getPaymentStatus() == null) {
+            throw new InvalidOrderDataException("Order ID, Payment ID, and Payment Status must not be null.");
         }
 
         Order existingOrder = getExistingOrder(command.getOrderId());

@@ -19,6 +19,4 @@ public class PaymentStatusUpdatedEvent {
     private PaymentStatus paymentStatus;
     private String message;
     private LocalDateTime updatedAt;
-    private String customerName;
-    private String customerEmail;
 }

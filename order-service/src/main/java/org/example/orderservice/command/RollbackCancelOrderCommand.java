@@ -15,4 +15,5 @@ import java.util.UUID;
 public class RollbackCancelOrderCommand {
     @TargetAggregateIdentifier
     private UUID orderId;
+    private String message;
 }

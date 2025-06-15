@@ -274,9 +274,6 @@ public class CreateOrderSaga {
                 .paymentId(paymentId)
                 .paymentStatus(paymentStatus)
                 .message("Payment processed")
-                .updatedAt(updatedAt)
-                .customerName(customerName)
-                .customerEmail(customerEmail)
                 .build();
         commandGateway.send(
                 updatePaymentStatusCommand,

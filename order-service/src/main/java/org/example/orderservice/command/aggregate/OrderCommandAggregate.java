@@ -13,6 +13,7 @@ import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.*;
+import org.example.orderservice.exception.InvalidOrderDataException;
 import org.example.orderservice.exception.InvalidOrderStateException;
 import org.springframework.beans.BeanUtils;
 
@@ -82,19 +83,28 @@ public class OrderCommandAggregate {
 
     @CommandHandler
     public void handle(RequestOrderCancellationCommand command) {
-        if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new InvalidOrderStateException("Order is already cancelled.");
+        if (this.orderStatus.equals(OrderStatus.COMPLETED) || this.orderStatus.equals(OrderStatus.CANCELLED)) {
+            throw new InvalidOrderStateException("Order with ID " + command.getOrderId() + " is already completed or cancelled.");
         }
-
+        if (this.shippingId != null) {
+            throw new InvalidOrderStateException("Order with ID " + command.getOrderId() + " is already shipped.");
+        }
+        if(!this.customerId.equals(command.getCustomerId())) {
+            throw new InvalidOrderDataException("Order with ID " + command.getOrderId() + " does not belong to customer with ID " + command.getCustomerId());
+        }
         OrderCancellationRequestedEvent event = new OrderCancellationRequestedEvent();
         BeanUtils.copyProperties(command, event);
+        event.setPaymentId(this.paymentId);
+        event.setShippingId(this.shippingId);
+        event.setItems(this.items);
+        event.setTotalAmount(this.totalAmount);
+        event.setMessage(command.getMessage());
+
         AggregateLifecycle.apply(event);
     }
 
     @EventSourcingHandler
     public void on(OrderCancellationRequestedEvent event) {
-        this.message = event.getMessage();
-        this.updatedAt = event.getCancelledAt();
     }
 
     @CommandHandler
@@ -116,6 +126,7 @@ public class OrderCommandAggregate {
     public void handle(UpdatePaymentStatusCommand command) {
         PaymentStatusUpdatedEvent event = new PaymentStatusUpdatedEvent();
         BeanUtils.copyProperties(command, event);
+        event.setUpdatedAt(LocalDateTime.now());
         AggregateLifecycle.apply(event);
     }
 
@@ -125,8 +136,6 @@ public class OrderCommandAggregate {
         this.paymentStatus = event.getPaymentStatus();
         this.message = event.getMessage();
         this.updatedAt = event.getUpdatedAt();
-        this.customerName = event.getCustomerName();
-        this.customerEmail = event.getCustomerEmail();
     }
 
     @CommandHandler
@@ -139,7 +148,7 @@ public class OrderCommandAggregate {
     @EventSourcingHandler
     public void on(ShippingStatusUpdatedEvent event) {
         this.shippingStatus = event.getShippingStatus();
-        if(event.getShippingStatus() == ShippingStatus.DELIVERED) {
+        if (event.getShippingStatus() == ShippingStatus.DELIVERED) {
             this.orderStatus = OrderStatus.COMPLETED;
         }
         this.message = event.getMessage();
@@ -162,5 +171,22 @@ public class OrderCommandAggregate {
         this.message = event.getMessage();
         this.updatedAt = event.getUpdatedAt();
     }
+
+    @CommandHandler
+    public void handle(RollbackCancelOrderCommand command) {
+        OrderCancellationRolledBackEvent event = OrderCancellationRolledBackEvent.builder()
+                .orderId(command.getOrderId())
+                .orderStatus(OrderStatus.CANCELLATION_FAILED)
+                .message(command.getMessage())
+                .build();
+        AggregateLifecycle.apply(event);
+    }
+
+    @EventSourcingHandler
+    public void on(OrderCancellationRolledBackEvent event) {
+        this.orderStatus = event.getOrderStatus();
+        this.message = event.getMessage();
+    }
+
 
 }

@@ -4,23 +4,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
+import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
-import org.example.common.commands.CancelPaymentCommand;
-import org.example.common.commands.CancelShippingCommand;
-import org.example.common.commands.ReleaseProductReservationCommand;
-import org.example.common.commands.ValidateCustomerCommand;
+import org.example.common.commands.*;
+import org.example.common.constants.OrderStatus;
 import org.example.common.constants.PaymentStatus;
-import org.example.common.constants.ShippingStatus;
 import org.example.common.dto.OrderItemDto;
 import org.example.common.events.*;
 import org.example.orderservice.command.CancelOrderCommand;
-import org.example.orderservice.command.CompleteOrderCancellationCommand;
+import org.example.orderservice.command.RollbackCancelOrderCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Saga
 @Slf4j
@@ -35,12 +34,12 @@ public class CancelOrderSaga {
     private UUID shippingId;
     private List<OrderItemDto> items;
     private BigDecimal totalAmount;
-    private String message;
-    private PaymentStatus paymentStatus;
-    private ShippingStatus shippingStatus;
+    private String reasonForCancellation;
+    private String errorMessage;
 
     private Set<UUID> releasedProducts = new HashSet<>();
-    private LocalDateTime cancelledAt;
+    private LocalDateTime updatedAt;
+    private AtomicBoolean rollbackInitiated = new AtomicBoolean(false);
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -52,35 +51,120 @@ public class CancelOrderSaga {
         this.shippingId = event.getShippingId();
         this.items = event.getItems();
         this.totalAmount = event.getTotalAmount();
-        this.message = event.getMessage();
+        this.reasonForCancellation = event.getMessage();
 
         ValidateCustomerCommand validateCustomerCommand = ValidateCustomerCommand.builder()
                 .customerId(event.getCustomerId())
                 .orderId(event.getOrderId())
                 .build();
-        commandGateway.send(validateCustomerCommand);
+
+        commandGateway.send(
+                validateCustomerCommand,
+                (commandMessage, commandResult) -> {
+                    if (commandResult.isExceptional()) {
+                        log.error("[Saga] Failed to validate customer for orderId {}: {}",
+                                commandMessage.getPayload().getOrderId(),
+                                commandResult.exceptionResult().getMessage());
+                        SagaLifecycle.end();
+                    }
+                }
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(CustomerValidatedEvent event) {
         log.info("[Saga] Received CustomerValidatedEvent for customerId {}", event.getCustomerId());
-        CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
+        if (paymentId != null) {
+            cancelPayment();
+        } else {
+            releaseAllProducts();
+        }
+    }
+
+    private void cancelPayment() {
+        CancelPaymentCommand cancelPaymentCommand = CancelPaymentCommand.builder()
+                .paymentId(paymentId)
                 .orderId(orderId)
                 .customerId(customerId)
-                .message(message)
+                .message(reasonForCancellation)
+                .amount(totalAmount)
                 .build();
-        commandGateway.send(cancelOrderCommand);
+        commandGateway.send(
+                cancelPaymentCommand,
+                (commandMessage, commandResult) -> {
+                    if (commandResult.isExceptional()) {
+                        log.error("[Saga] Failed to cancel payment for orderId {}: {}, terminating saga",
+                                commandMessage.getPayload().getOrderId(),
+                                commandResult.exceptionResult().getMessage());
+                        SagaLifecycle.end();
+                    }
+                }
+        );
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(PaymentCancelledEvent event) {
+        log.info("[Saga] Received PaymentCancelledEvent for paymentId {}", event.getPaymentId());
+        UpdatePaymentStatusCommand updatePaymentStatusCommand = UpdatePaymentStatusCommand.builder()
+                .orderId(orderId)
+                .paymentId(paymentId)
+                .paymentStatus(PaymentStatus.CANCELLED)
+                .message(reasonForCancellation)
+                .build();
+        commandGateway.send(
+                updatePaymentStatusCommand,
+                (commandMessage, commandResult) -> {
+                    if (commandResult.isExceptional()) {
+                        log.error("[Saga] Failed to update payment status for orderId {}: {}, rolling back payment",
+                                commandMessage.getPayload().getOrderId(),
+                                commandResult.exceptionResult().getMessage());
+                        rollbackPayment();
+                    }
+                }
+        );
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(PaymentStatusUpdatedEvent event) {
+        log.info("[Saga] Received PaymentStatusUpdatedEvent for paymentId {}, status: {}", event.getPaymentId(), event.getPaymentStatus());
+        releaseAllProducts();
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(ProductReservationReleasedEvent event) {
+        if (rollbackInitiated.get()) {
+            return;
+        }
+        log.info("[Saga] Received ProductReservationReleasedEvent for productId {}", event.getProductId());
+        releasedProducts.add(event.getProductId());
+
+        if (releasedProducts.size() == items.size()) {
+            log.info("[Saga] All product reservations released for orderId {}", orderId);
+            cancelOrder();
+        }
     }
 
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
-    public void handle(CustomerValidationFailedEvent event) {
-        log.warn("[Saga] Received CustomerValidationFailedEvent for customerId {}", event.getCustomerId());
+    public void handle(OrderCancelledEvent event) {
+        log.info("[Saga] Received OrderCancellationCompletedEvent for orderId {}", event.getOrderId());
     }
 
-    @SagaEventHandler(associationProperty = "orderId")
-    public void handle(OrderCancelledEvent event) {
-        log.info("[Saga] Received OrderCancelledEvent for orderId {}", event.getOrderId());
+    private void rollbackPayment() {
+        RollBackPaymentStatusCommand rollbackPaymentStatusCommand = RollBackPaymentStatusCommand.builder()
+                .orderId(orderId)
+                .paymentId(paymentId)
+                .paymentStatus(PaymentStatus.COMPLETED)
+                .build();
+        commandGateway.send(rollbackPaymentStatusCommand);
+    }
+
+    private void releaseAllProducts() {
+        if (items == null || items.isEmpty()) {
+            cancelOrder();
+            return;
+        }
+
         this.items.forEach((orderItemDto) -> {
             log.info("[Saga] Releasing product reservation for productId {}", orderItemDto.getProductId());
             ReleaseProductReservationCommand releaseProductReservationCommand = ReleaseProductReservationCommand.builder()
@@ -89,61 +173,43 @@ public class CancelOrderSaga {
                     .customerId(customerId)
                     .quantity(orderItemDto.getQuantity())
                     .build();
-            commandGateway.send(releaseProductReservationCommand);
+            commandGateway.send(
+                    releaseProductReservationCommand,
+                    (commandMessage, commandResult) -> {
+                        if (commandResult.isExceptional() && rollbackInitiated.compareAndSet(false, true)) {
+                            String errorMessage = String.format(
+                                    "[Saga] Failed to release product reservation for orderId %s. Initiating order cancellation rollback. Reason: %s",
+                                    commandMessage.getPayload().getOrderId(),
+                                    commandResult.exceptionResult().getMessage()
+                            );
+                            log.error(errorMessage);
+                            rollbackOrderCancellation(errorMessage);
+                        }
+
+                    }
+            );
         });
     }
 
-    @SagaEventHandler(associationProperty = "orderId")
-    public void handle(ProductReservationReleasedEvent event) {
-        log.info("[Saga] Received ProductReservationReleasedEvent for productId {}", event.getProductId());
-        releasedProducts.add(event.getProductId());
-
-        if (releasedProducts.size() == items.size()) {
-            log.info("[Saga] All product reservations released for orderId {}", orderId);
-            this.items = new ArrayList<>();
-            CancelPaymentCommand cancelPaymentCommand = CancelPaymentCommand.builder()
-                    .paymentId(paymentId)
-                    .customerId(customerId)
-                    .orderId(orderId)
-                    .amount(totalAmount)
-                    .message(message)
-                    .build();
-            commandGateway.send(cancelPaymentCommand);
-        }
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    public void handle(PaymentCancelledEvent event) {
-        log.info("[Saga] Received PaymentCancelledEvent for paymentId {}", event.getPaymentId());
-        this.paymentStatus = PaymentStatus.CANCELLED;
-        CancelShippingCommand cancelShippingCommand = CancelShippingCommand.builder()
-                .shippingId(shippingId)
+    private void cancelOrder() {
+        CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
                 .orderId(orderId)
-                .message(message)
+                .customerId(customerId)
+                .message(reasonForCancellation)
                 .build();
-        commandGateway.send(cancelShippingCommand);
+        commandGateway.send(cancelOrderCommand);
     }
 
-    @SagaEventHandler(associationProperty = "orderId")
-    public void handle(ShippingCancelledEvent event) {
-        log.info("[Saga] Received ShippingCancelledEvent for shippingId {}", event.getShippingId());
-        this.shippingStatus = ShippingStatus.CANCELLED;
-        this.cancelledAt = LocalDateTime.now();
-        CompleteOrderCancellationCommand completeOrderCancelledEvent = CompleteOrderCancellationCommand.builder()
+
+    private void rollbackOrderCancellation(String reason) {
+        log.info("[Saga] Rolling back order cancellation for orderId {}", orderId);
+        SagaLifecycle.end();
+        RollbackCancelOrderCommand command = RollbackCancelOrderCommand.builder()
                 .orderId(orderId)
-                .paymentStatus(paymentStatus)
-                .shippingStatus(shippingStatus)
-                .items(items)
-                .message(message)
-                .cancelledAt(cancelledAt)
+                .message(reason)
                 .build();
-        commandGateway.send(completeOrderCancelledEvent);
-
+        commandGateway.send(command);
     }
 
-    @EndSaga
-    @SagaEventHandler(associationProperty = "orderId")
-    public void handle(OrderCancellationCompletedEvent event) {
-        log.info("[Saga] Received OrderCancellationCompletedEvent for orderId {}", event.getOrderId());
-    }
+
 }

@@ -51,6 +51,16 @@ public class PaymentServiceImpl implements IPaymentService {
     }
 
     @Override
+    public void rollBackPayment(UUID paymentId, UUID orderId, PaymentStatus paymentStatus) {
+        Payment payment = getPaymentById(paymentId);
+        if (payment.getOrderId() != null && !payment.getOrderId().equals(orderId)) {
+            throw new InvalidPaymentDataException("Payment with this order ID does not exist: " + orderId);
+        }
+        payment.setPaymentStatus(paymentStatus);
+        paymentRepository.save(payment);
+    }
+
+    @Override
     public void cancelPayment(UUID paymentId, PaymentStatus status, String reason, LocalDateTime cancelledAt) {
         Payment payment = getPaymentById(paymentId);
         payment.setPaymentStatus(status);

@@ -1,25 +1,20 @@
-package org.example.common.commands;
+package org.example.common.events;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import org.example.common.constants.PaymentStatus;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdatePaymentStatusCommand {
-
-    @TargetAggregateIdentifier
-    private UUID orderId;
+public class PaymentStatusRolledBackEvent {
     private UUID paymentId;
+    private UUID orderId;
     private PaymentStatus paymentStatus;
-    private String message;
 }

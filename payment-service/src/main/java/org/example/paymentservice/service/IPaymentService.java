@@ -14,4 +14,5 @@ public interface IPaymentService {
     Payment getPaymentById(UUID paymentId);
     List<Payment> getPaymentsByOrderId(UUID orderId);
     List<Payment> getAllPayments();
+    void rollBackPayment(UUID paymentId, UUID orderId, PaymentStatus paymentStatus);
 }

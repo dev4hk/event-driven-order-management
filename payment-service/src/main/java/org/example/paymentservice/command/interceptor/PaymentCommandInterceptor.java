@@ -6,10 +6,9 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.example.common.commands.CancelPaymentCommand;
 import org.example.common.commands.InitiatePaymentCommand;
 import org.example.common.commands.ProcessPaymentCommand;
-import org.example.common.constants.PaymentStatus;
+import org.example.common.commands.RollBackPaymentStatusCommand;
 import org.example.common.exception.ResourceAlreadyExistsException;
 import org.example.common.exception.ResourceNotFoundException; // Corrected import
-import org.example.paymentservice.entity.Payment;
 import org.example.paymentservice.exception.InvalidPaymentDataException;
 import org.example.paymentservice.exception.InvalidPaymentStateException;
 import org.example.paymentservice.repository.PaymentRepository;
@@ -32,16 +31,17 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
             Object payload = command.getPayload();
             if (payload instanceof InitiatePaymentCommand) {
                 validateInitiatePaymentCommand((InitiatePaymentCommand) payload);
-            }
-            if (payload instanceof ProcessPaymentCommand) {
+            } else if (payload instanceof ProcessPaymentCommand) {
                 validateProcessPaymentCommand((ProcessPaymentCommand) payload);
             } else if (payload instanceof CancelPaymentCommand) {
                 validateCancelPaymentCommand((CancelPaymentCommand) payload);
+            } else if (payload instanceof RollBackPaymentStatusCommand) {
+                validateRollbackPaymentStatusCommand((RollBackPaymentStatusCommand) payload);
             }
+
             return command;
         };
     }
-
 
     private void validateCorePaymentData(UUID paymentId, UUID orderId, UUID customerId, BigDecimal amount) {
         if (paymentId == null || orderId == null || customerId == null) {
@@ -74,4 +74,14 @@ public class PaymentCommandInterceptor implements MessageDispatchInterceptor<Com
             throw new ResourceNotFoundException("Payment with this ID does not exist: " + command.getPaymentId());
         }
     }
+
+    private void validateRollbackPaymentStatusCommand(RollBackPaymentStatusCommand command) {
+        if(command.getPaymentId() == null || command.getOrderId() == null || command.getPaymentStatus() == null) {
+            throw new InvalidPaymentStateException("Payment ID, order ID, and payment status must not be null.");
+        }
+        if (!paymentRepository.existsById(command.getPaymentId())) {
+            throw new ResourceNotFoundException("Payment with this ID does not exist: " + command.getPaymentId());
+        }
+    }
+
 }

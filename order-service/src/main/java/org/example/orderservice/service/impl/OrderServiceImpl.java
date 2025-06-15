@@ -122,19 +122,21 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public void updatePaymentStatus(UUID orderId, UUID paymentId, PaymentStatus paymentStatus, String message, LocalDateTime updatedAt, String customerName, String customerEmail) {
+    public void updateOrder(UUID orderId, OrderStatus orderStatus, String message) {
+        Order existingOrder = getOrderById(orderId);
+        existingOrder.setOrderStatus(orderStatus);
+        existingOrder.setMessage(message);
+        orderRepository.save(existingOrder);
+    }
+
+    @Override
+    public void updatePaymentStatus(UUID orderId, UUID paymentId, PaymentStatus paymentStatus, String message, LocalDateTime updatedAt) {
         Order existingOrder = getOrderById(orderId);
         if (existingOrder.getPaymentId() == null) {
             existingOrder.setPaymentId(paymentId);
         }
         if(existingOrder.getPaymentId() != null && !existingOrder.getPaymentId().equals(paymentId)) {
             throw new ResourceNotFoundException("Order with this payment ID does not exist: " + paymentId);
-        }
-        if(existingOrder.getCustomerName() == null) {
-            existingOrder.setCustomerName(customerName);
-        }
-        if(existingOrder.getCustomerEmail() == null) {
-            existingOrder.setCustomerEmail(customerEmail);
         }
         existingOrder.setPaymentStatus(paymentStatus);
         existingOrder.setUpdatedAt(updatedAt);

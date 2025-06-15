@@ -1,12 +1,11 @@
-package org.example.common.commands;
-
+package org.example.common.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
-import org.example.common.constants.PaymentStatus;
+import org.example.common.constants.OrderStatus;
 
 import java.util.UUID;
 
@@ -14,13 +13,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RollbackPaymentCancellationCommand {
-
+public class OrderCancellationRolledBackEvent {
     @TargetAggregateIdentifier
-    private UUID paymentId;
     private UUID orderId;
-    private UUID customerId;
-    private PaymentStatus paymentStatus;
+    private OrderStatus orderStatus;
     private String message;
-
 }

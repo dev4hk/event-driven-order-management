@@ -4,5 +4,6 @@ public enum OrderStatus {
     INITIATED,
     UPDATED,
     CANCELLED,
-    COMPLETED
+    COMPLETED,
+    CANCELLATION_FAILED
 }

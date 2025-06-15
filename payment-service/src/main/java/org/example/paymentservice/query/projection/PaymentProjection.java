@@ -35,4 +35,13 @@ public class PaymentProjection {
         );
     }
 
+    @EventHandler
+    public void on(PaymentStatusRolledBackEvent event) {
+        paymentService.rollBackPayment(
+                event.getPaymentId(),
+                event.getOrderId(),
+                event.getPaymentStatus()
+        );
+    }
+
 }
