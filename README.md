@@ -47,6 +47,10 @@ Instead of storing the current state of an entity, we store a sequence of events
 
 The Saga pattern is used to manage transactions that span across multiple microservices. The `OrderSaga` in the `order-service` is a prime example of this. It coordinates the complex process of an order, ensuring that if one step fails, compensating actions are triggered to maintain data consistency across the system.
 
+### Materialized Views
+
+To enhance query performance and simplify data retrieval, the system extensively uses **Materialized Views** on the query side. For example, the `Order` entity in the `order-service`'s read model acts as a materialized view. It combines and denormalizes relevant information from different services (like payment status from the Payment Service and shipping details from the Shipping Service) into a single, read-optimized projection. This eliminates the need for complex joins or multiple service calls when querying order details, providing a fast and consistent view of the order's state.
+
 ## Event Flow for Order Creation
 
 OrderInitiated[Order Initiated Event] --> ValidateCustomer(Validate Customer)
