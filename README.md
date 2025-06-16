@@ -1,8 +1,8 @@
-# Event-Driven Order Management System
+# 📝 Event-Driven Order Management System
 
 This project is a comprehensive, event-driven order management system built with a microservices architecture. It showcases a modern approach to building scalable and resilient applications using Java, Spring Boot, and Axon Framework. This project is an ideal entry for a junior developer's portfolio, demonstrating a solid understanding of distributed systems and advanced architectural patterns.
 
-## Overview
+## 📜 Overview
 
 The Event-Driven Order Management System is designed to handle the entire lifecycle of an order, from customer registration and product management to payment processing and shipping. The use of an event-driven architecture ensures loose coupling between services, allowing for greater flexibility and scalability.
 
@@ -15,15 +15,15 @@ This project serves as a practical example of implementing advanced software eng
 - PostgreSQL (running instance)
 - Axon Server (running instance)
 
-## Architecture
+## 🏗️ Architecture
 
 The system is composed of several microservices that communicate with each other through an event bus. Axon Server is used as the event store and message broker, while Eureka Server handles service discovery.
 
--   **Eureka Server:** A service registry that allows microservices to locate and communicate with each other.
--   **Microservices:** Each service is responsible for a specific business domain (e.g., customers, products, orders). They are designed to be independent, scalable, and resilient.
--   **Axon Server:** The backbone of the event-driven architecture, providing an event store and a message bus for inter-service communication.
+-   **🌐 Eureka Server:** A service registry that allows microservices to locate and communicate with each other.
+-   **🧩 Microservices:** Each service is responsible for a specific business domain (e.g., customers, products, orders). They are designed to be independent, scalable, and resilient.
+-   **⚡ Axon Server:** The backbone of the event-driven architecture, providing an event store and a message bus for inter-service communication.
 
-## Event-Driven Architecture Patterns
+## 🔄 Event-Driven Architecture Patterns
 
 This project heavily utilizes several key event-driven architecture patterns, which are crucial for building robust and scalable distributed systems.
 
@@ -50,7 +50,7 @@ The Saga pattern is used to manage transactions that span across multiple micros
 
 To enhance query performance and simplify data retrieval, the system extensively uses **Materialized Views** on the query side. For example, the `Order` entity in the `order-service`'s read model acts as a materialized view. It combines and denormalizes relevant information from different services (like payment status from the Payment Service and shipping details from the Shipping Service) into a single, read-optimized projection. This eliminates the need for complex joins or multiple service calls when querying order details, providing a fast and consistent view of the order's state.
 
-## Event Flow for Order Creation
+## ✨ Event Flow for Order Creation
 
 The order creation process is managed by a saga that coordinates multiple services. The following tables describe the happy path and the compensation logic for failures.
 
@@ -80,7 +80,7 @@ The order creation process is managed by a saga that coordinates multiple servic
 | `releaseAllReservedProducts`| Product Reservation Step| `cancelOrder` |
 | `cancelOrder` | Initial Steps | **Saga Ends** |
 
-## Event Flow for Order Cancellation
+## ❌ Event Flow for Order Cancellation
 
 When a user requests to cancel an order, a separate saga is initiated to handle the process.
 
@@ -102,22 +102,22 @@ When a user requests to cancel an order, a separate saga is initiated to handle 
 | `rollbackPayment` | Payment Cancellation Steps | `rollbackOrderCancellation` |
 | `rollbackOrderCancellation`| Any Step After Validation | **Saga Ends** |
 
-## Technologies Used
+## 💻 Technologies Used
 
--   **Java 21:** The core programming language.
--   **Spring Boot:** For building the microservices.
--   **Axon Framework:** For implementing CQRS and event-sourcing.
--   **Spring Data JPA:** For database interactions.
--   **Lombok:** To reduce boilerplate code.
--   **H2 Database:** An in-memory database for development.
--   **Maven:** For project management.
+![Java](https://img.shields.io/badge/Java-21-blue.svg?style=for-the-badge&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-green.svg?style=for-the-badge&logo=spring-boot)
+![Axon Framework](https://img.shields.io/badge/Axon%20Framework-4.x-blue.svg?style=for-the-badge)
+![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-blue.svg?style=for-the-badge)
+![Lombok](https://img.shields.io/badge/Lombok-a9429e?style=for-the-badge&logo=lombok&logoColor=white)
+![H2 Database](https://img.shields.io/badge/H2%20Database-gray.svg?style=for-the-badge)
+![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
 
-## Microservices
+## 🧩 Microservices
 
--   **BOM Service:** A Maven Bill of Materials (BOM) module to define and manage consistent versions of common dependencies across all microservices.
--   **Common Module:** Contains shared code, such as common DTOs, commands, events, and constants, used by multiple services.
--   **Customer Service:** Manages customer information.
--   **Product Service:** Handles the product catalog and inventory.
--   **Order Service:** Manages the entire order lifecycle and orchestrates the Sagas.
--   **Payment Service:** Processes payments.
--   **Shipping Service:** Manages shipping and delivery.
+-   **📜 BOM Service:** A Maven Bill of Materials (BOM) module to define and manage consistent versions of common dependencies across all microservices.
+-   **🧱 Common Module:** Contains shared code, such as common DTOs, commands, events, and constants, used by multiple services.
+-   **👤 Customer Service:** Manages customer information.
+-   **📦 Product Service:** Handles the product catalog and inventory.
+-   **🛒 Order Service:** Manages the entire order lifecycle and orchestrates the Sagas.
+-   **💳 Payment Service:** Processes payments.
+-   **🚚 Shipping Service:** Manages shipping and delivery.
