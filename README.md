@@ -23,6 +23,10 @@ The system is composed of several microservices that communicate with each other
 -   **🧩 Microservices:** Each service is responsible for a specific business domain (e.g., customers, products, orders). They are designed to be independent, scalable, and resilient.
 -   **⚡ Axon Server:** The backbone of the event-driven architecture, providing an event store and a message bus for inter-service communication.
 
+## 📊 Diagram
+
+![Architecture Diagram](screenshots/Diagram.png)
+
 ## 🔄 Event-Driven Architecture Patterns
 
 This project heavily utilizes several key event-driven architecture patterns, which are crucial for building robust and scalable distributed systems.
